@@ -33,19 +33,21 @@ struct StorageTable: View {
             TableColumn("Name") { item in
                 NameCell(item: item, mode: mode)
             }
-            .width(min: 280, ideal: 420)
+            .width(min: 180, ideal: 420)
 
             TableColumn(mode == .categories ? "Location" : "Identified as") { item in
                 SecondaryCell(item: item, mode: mode)
             }
+            .width(min: 100, ideal: 280)
 
             TableColumn("Size") { item in
-                SizeCell(size: item.size, share: totalUsed > 0 ? Double(item.size) / Double(totalUsed) : 0)
+                SizeCell(size: item.size, scale: largestTopLevelSize, totalUsed: totalUsed)
             }
-            .width(min: 150, ideal: 180, max: 240)
+            .width(120)
         } rows: {
             StorageRows(items: items, expanded: $expanded)
         }
+        .background(TableViewConfigurator())
         .id(mode)
         .focused($isFocused)
         .onAppear { isFocused = true }
@@ -67,6 +69,10 @@ struct StorageTable: View {
                 toggleExpansion(of: id)
             }
         }
+    }
+
+    private var largestTopLevelSize: Int64 {
+        items.map(\.size).max() ?? 0
     }
 
     /// Items with children expand or collapse; leaves reveal themselves in Finder instead.
@@ -190,9 +196,13 @@ private extension ItemIcon {
     }
 }
 
+/// Bars are scaled to the largest top-level row so the column's width is used; the tooltip gives the disk share.
 private struct SizeCell: View {
+    private static let shareFormat = FloatingPointFormatStyle<Double>.Percent().precision(.fractionLength(1))
+
     let size: Int64
-    let share: Double
+    let scale: Int64
+    let totalUsed: Int64
 
     var body: some View {
         HStack(spacing: 8) {
@@ -202,9 +212,14 @@ private struct SizeCell: View {
             GeometryReader { proxy in
                 Capsule()
                     .fill(.tint.opacity(0.6))
-                    .frame(width: max(2, proxy.size.width * share))
+                    .frame(width: max(2, proxy.size.width * fraction(of: scale)))
             }
             .frame(height: 6)
         }
+        .help(totalUsed > 0 ? "\(fraction(of: totalUsed).formatted(Self.shareFormat)) of used space" : "")
+    }
+
+    private func fraction(of total: Int64) -> Double {
+        total > 0 ? min(1, Double(size) / Double(total)) : 0
     }
 }
