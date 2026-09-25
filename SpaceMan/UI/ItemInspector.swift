@@ -37,6 +37,10 @@ struct ItemInspector: View {
                             .fixedSize(horizontal: false, vertical: true)
                     }
 
+                    if !item.unreadablePaths.isEmpty {
+                        UnreadableFolders(paths: item.unreadablePaths)
+                    }
+
                     if let path = item.path {
                         VStack(alignment: .leading, spacing: 8) {
                             Text(path)
@@ -57,6 +61,26 @@ struct ItemInspector: View {
             ContentUnavailableView(
                 "No Selection", systemImage: "sidebar.right", description: Text("Select an item to see what it is.")
             )
+        }
+    }
+}
+
+private struct UnreadableFolders: View {
+    let paths: [String]
+
+    var body: some View {
+        DisclosureGroup("\(paths.count) folders couldn't be read") {
+            VStack(alignment: .leading, spacing: 4) {
+                ForEach(paths, id: \.self) { path in
+                    Text(path)
+                        .font(.caption.monospaced())
+                        .foregroundStyle(.secondary)
+                        .textSelection(.enabled)
+                }
+                Button("Copy List") { NSPasteboard.general.copy(paths.joined(separator: "\n")) }
+                    .padding(.top, 4)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 }

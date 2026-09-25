@@ -35,8 +35,8 @@ struct ContentView: View {
         switch model.phase {
         case .idle:
             ContentUnavailableView("Ready to Scan", systemImage: "internaldrive")
-        case let .scanning(itemCount, started):
-            ScanProgressView(itemCount: itemCount, started: started)
+        case let .scanning(progress):
+            ScanProgressView(progress: progress)
         case let .finished(result):
             VStack(spacing: 0) {
                 VStack(alignment: .leading, spacing: 12) {
@@ -60,19 +60,28 @@ struct ContentView: View {
 }
 
 private struct ScanProgressView: View {
-    let itemCount: Int
-    let started: Date
+    let progress: ScanModel.Progress
 
     var body: some View {
         VStack(spacing: 12) {
-            ProgressView()
-            Text("Scanning…").font(.headline)
-            Text("\(itemCount.formatted()) items")
-                .monospacedDigit()
-                .foregroundStyle(.secondary)
-            Text(started, style: .timer)
-                .monospacedDigit()
-                .foregroundStyle(.secondary)
+            if let fraction = progress.fractionComplete {
+                ProgressView(value: fraction) {
+                    Text("Scanning…").font(.headline)
+                } currentValueLabel: {
+                    Text(fraction.formatted(.percent.precision(.fractionLength(0))))
+                        .monospacedDigit()
+                }
+                .frame(width: 320)
+            } else {
+                ProgressView()
+                Text("Scanning…").font(.headline)
+            }
+            HStack(spacing: 12) {
+                Text("\(progress.itemCount.formatted()) items")
+                Text(progress.started, style: .timer)
+            }
+            .monospacedDigit()
+            .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }

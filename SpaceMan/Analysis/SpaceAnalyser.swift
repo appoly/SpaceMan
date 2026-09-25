@@ -28,6 +28,7 @@ nonisolated struct DiskCapacity: Sendable {
 nonisolated struct ScanResult: Sendable {
     let categories: [StorageItem]
     let capacity: DiskCapacity?
+    let scannedBytes: Int64
     let deniedFolderCount: Int
     let duration: Duration
 }
@@ -47,9 +48,9 @@ nonisolated enum SpaceAnalyser {
         let unreadableRuntimes = unreadableSimulatorRuntimes(in: root, context: namingContext)
         extras[.appleDevelopment] = unreadableRuntimes.map { ExtraItem(group: "Simulator runtimes", item: $0) }
 
-        let deniedCount = stats.deniedPaths.withLock(\.count)
+        let deniedPaths = stats.deniedPaths.withLock(\.self).sorted()
         let scannedSize = root.size + unreadableRuntimes.reduce(0) { $0 + $1.size }
-        let hidden = hiddenSpace(scanned: scannedSize, deniedCount: deniedCount)
+        let hidden = hiddenSpace(scanned: scannedSize, deniedPaths: deniedPaths)
         extras[.macOS] = systemVolumes() + [hidden].compactMap(\.self).map { ExtraItem(group: nil, item: $0) }
 
         let categories = Classifier(
@@ -58,9 +59,14 @@ nonisolated enum SpaceAnalyser {
         return ScanResult(
             categories: categories,
             capacity: DiskCapacity.current(),
-            deniedFolderCount: deniedCount,
+            scannedBytes: root.size,
+            deniedFolderCount: deniedPaths.count,
             duration: ContinuousClock.now - start
         )
+    }
+
+    static var dataVolumeUsedBytes: Int64? {
+        usedBytes(onVolumeAt: dataVolume)
     }
 
     static var hasFullDiskAccess: Bool {
@@ -122,11 +128,13 @@ nonisolated enum SpaceAnalyser {
         }
     }
 
-    private static func hiddenSpace(scanned: Int64, deniedCount: Int) -> StorageItem? {
+    private static func hiddenSpace(scanned: Int64, deniedPaths: [String]) -> StorageItem? {
         guard let dataUsed = usedBytes(onVolumeAt: dataVolume) else { return nil }
         let hidden = dataUsed - scanned
         guard hidden > 0 else { return nil }
-        let deniedFlag = "\(deniedCount) folders couldn't be read. Granting Full Disk Access reveals most of them."
+        let deniedFlags = deniedPaths.isEmpty || hasFullDiskAccess
+            ? []
+            : ["\(deniedPaths.count) folders couldn't be read. Granting Full Disk Access reveals most of them."]
         return StorageItem(
             id: "hidden",
             title: "Hidden from scan",
@@ -134,7 +142,8 @@ nonisolated enum SpaceAnalyser {
             category: .macOS,
             about: "Space used on the data volume that no folder accounts for: APFS snapshots, purgeable data, " +
                 "and folders only macOS itself can read.",
-            flags: deniedCount > 0 ? [deniedFlag] : []
+            flags: deniedFlags,
+            unreadablePaths: deniedPaths
         )
     }
 

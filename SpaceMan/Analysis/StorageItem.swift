@@ -16,6 +16,7 @@ nonisolated struct StorageItem: Identifiable, Hashable, Sendable {
     var about: String?
     var flags: [String] = []
     var isFile = false
+    var unreadablePaths: [String] = []
     /// `nil` for leaves, as `Table`/`OutlineGroup` require.
     var children: [StorageItem]?
 
