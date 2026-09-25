@@ -31,6 +31,6 @@ initialisation on macOS 27.0.
 ## Full Disk Access
 
 Without it, ~900 folders (Mail, Messages, Safari, other apps' containers…) can't be read and land in
-"Hidden from scan". Grant it in System Settings › Privacy & Security › Full Disk Access, then rescan. The
-permission is tied to the app's code signature, so an ad-hoc-signed debug build loses it on every rebuild; set a
-development team to keep it.
+"Hidden from scan", and macOS prompts for Desktop/Documents/Downloads access. Grant it in System Settings ›
+Privacy & Security › Full Disk Access, then rescan. The grant is tied to the code signature, which is why the
+project signs with a development team: an ad-hoc-signed build would lose the grant on every rebuild.
