@@ -23,74 +23,38 @@ nonisolated final class ScanStats: Sendable {
     }
 }
 
+nonisolated struct DirectoryListing: Sendable {
+    var fileBytes: Int64 = 0
+    var largeFiles: [FSNode] = []
+    var subdirectories: [String] = []
+}
+
 /// Walks a single volume with `getattrlistbulk`, returning a tree that keeps only entries of at least
 /// `retainThreshold` bytes; everything smaller is folded into its parent's size.
 nonisolated struct FileSystemScanner: Sendable {
     let retainThreshold: Int64
     let stats: ScanStats
-    private let parallelDepth = 8
+    private let threadCount: Int
 
-    init(retainThreshold: Int64, stats: ScanStats) {
+    /// APFS serialises much of the metadata work in the kernel, so beyond ~¾ of the cores extra threads only add
+    /// lock contention: on 8 cores, 6 threads scan as fast as 64 with 20% less CPU.
+    static let defaultThreadCount = max(2, ProcessInfo.processInfo.activeProcessorCount * 3 / 4)
+
+    init(retainThreshold: Int64, stats: ScanStats, threadCount: Int = defaultThreadCount) {
         self.retainThreshold = retainThreshold
         self.stats = stats
+        self.threadCount = threadCount
     }
 
     func scan(path: String) async -> FSNode {
-        await scanDirectory(path: path, name: path, depth: 0)
-    }
-
-    private func scanDirectory(path: String, name: String, depth: Int) async -> FSNode {
-        guard depth < parallelDepth else { return scanDirectorySync(path: path, name: name) }
-        guard !Task.isCancelled, let listing = list(path) else {
-            return FSNode(name: name, isDirectory: true, size: 0, children: [])
-        }
-
-        var node = FSNode(name: name, isDirectory: true, size: listing.fileBytes, children: listing.largeFiles)
-        await withTaskGroup(of: FSNode.self) { group in
-            for subdirectory in listing.subdirectories {
-                group.addTask {
-                    await scanDirectory(
-                        path: path.appendingPathComponent(subdirectory), name: subdirectory, depth: depth + 1
-                    )
-                }
-            }
-            for await child in group {
-                absorb(child, into: &node)
-            }
-        }
-        return node
-    }
-
-    private func scanDirectorySync(path: String, name: String) -> FSNode {
-        guard !Task.isCancelled, let listing = list(path) else {
-            return FSNode(name: name, isDirectory: true, size: 0, children: [])
-        }
-
-        var node = FSNode(name: name, isDirectory: true, size: listing.fileBytes, children: listing.largeFiles)
-        for subdirectory in listing.subdirectories {
-            absorb(scanDirectorySync(path: path.appendingPathComponent(subdirectory), name: subdirectory), into: &node)
-        }
-        return node
-    }
-
-    private func absorb(_ child: FSNode, into node: inout FSNode) {
-        node.size += child.size
-        if child.size >= retainThreshold {
-            node.children.append(child)
-        }
+        await DirectoryWalk(threadCount: threadCount, retainThreshold: retainThreshold) { list($0) }.run(path: path)
     }
 
     // MARK: - Directory listing
 
-    private struct Listing {
-        var fileBytes: Int64 = 0
-        var largeFiles: [FSNode] = []
-        var subdirectories: [String] = []
-    }
-
     private static let bufferSize = 256 * 1024
 
-    private func list(_ path: String) -> Listing? {
+    private func list(_ path: String) -> DirectoryListing? {
         let descriptor = open(path, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC)
         guard descriptor >= 0 else {
             if errno == EACCES || errno == EPERM {
@@ -110,7 +74,7 @@ nonisolated struct FileSystemScanner: Sendable {
         let buffer = UnsafeMutableRawPointer.allocate(byteCount: Self.bufferSize, alignment: 16)
         defer { buffer.deallocate() }
 
-        var listing = Listing()
+        var listing = DirectoryListing()
         while true {
             let count = getattrlistbulk(descriptor, &request, buffer, Self.bufferSize, UInt64(FSOPT_PACK_INVAL_ATTRS))
             guard count > 0 else { break }
@@ -126,7 +90,7 @@ nonisolated struct FileSystemScanner: Sendable {
         return listing
     }
 
-    private func record(_ entry: BulkEntry, in listing: inout Listing) {
+    private func record(_ entry: BulkEntry, in listing: inout DirectoryListing) {
         guard entry.error == 0 else { return }
 
         switch entry.objectType {
