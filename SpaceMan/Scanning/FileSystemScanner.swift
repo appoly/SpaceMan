@@ -24,7 +24,7 @@ nonisolated final class ScanStats: Sendable {
 nonisolated struct FileSystemScanner: Sendable {
     let retainThreshold: Int64
     let stats: ScanStats
-    private let parallelDepth = 4
+    private let parallelDepth = 8
 
     init(retainThreshold: Int64, stats: ScanStats) {
         self.retainThreshold = retainThreshold
