@@ -11,16 +11,11 @@ nonisolated struct FSNode: Sendable {
 
 nonisolated final class ScanStats: Sendable {
     let itemCount = Atomic<Int>(0)
-    let bytesCount = Atomic<Int64>(0)
     let deniedPaths = Mutex<[String]>([])
     private let seenHardLinks = Mutex<Set<UInt64>>([])
 
     var itemsScanned: Int {
         itemCount.load(ordering: .relaxed)
-    }
-
-    var bytesScanned: Int64 {
-        bytesCount.load(ordering: .relaxed)
     }
 
     func isFirstSighting(ofHardLink fileID: UInt64) -> Bool {
@@ -128,7 +123,6 @@ nonisolated struct FileSystemScanner: Sendable {
             }
             stats.itemCount.add(Int(count), ordering: .relaxed)
         }
-        stats.bytesCount.add(listing.fileBytes, ordering: .relaxed)
         return listing
     }
 

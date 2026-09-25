@@ -16,7 +16,7 @@ final class ScanModel {
         case finished(ScanResult)
     }
 
-    private static let lastScannedBytesKey = "lastScannedBytes"
+    private static let lastScannedItemCountKey = "lastScannedItemCount"
 
     private(set) var phase = Phase.idle
     private(set) var hasFullDiskAccess = SpaceAnalyser.hasFullDiskAccess
@@ -37,13 +37,13 @@ final class ScanModel {
         hasFullDiskAccess = SpaceAnalyser.hasFullDiskAccess
         let stats = ScanStats()
         let started = Date()
-        let expectedBytes = expectedScanBytes()
-        phase = .scanning(Progress(itemCount: 0, started: started, fractionComplete: expectedBytes.map { _ in 0 }))
+        let expectedItems = expectedItemCount()
+        phase = .scanning(Progress(itemCount: 0, started: started, fractionComplete: expectedItems.map { _ in 0 }))
 
         scanTask = Task {
             let progress = Task {
                 while !Task.isCancelled {
-                    let fraction = expectedBytes.map { min(0.99, Double(stats.bytesScanned) / Double($0)) }
+                    let fraction = expectedItems.map { min(0.99, Double(stats.itemsScanned) / Double($0)) }
                     phase = .scanning(
                         Progress(itemCount: stats.itemsScanned, started: started, fractionComplete: fraction)
                     )
@@ -53,17 +53,15 @@ final class ScanModel {
             let result = await Task.detached { await SpaceAnalyser.analyse(stats: stats) }.value
             progress.cancel()
             guard !Task.isCancelled else { return }
-            UserDefaults.standard.set(result.scannedBytes, forKey: Self.lastScannedBytesKey)
+            UserDefaults.standard.set(result.scannedItemCount, forKey: Self.lastScannedItemCountKey)
             phase = .finished(result)
         }
     }
 
-    /// The previous scan's total is the best estimate, since the volume's usage includes space no scan can see.
-    private func expectedScanBytes() -> Int64? {
-        let lastScanned = Int64(UserDefaults.standard.integer(forKey: Self.lastScannedBytesKey))
-        if lastScanned > 0 {
-            return lastScanned
-        }
-        return SpaceAnalyser.dataVolumeUsedBytes.flatMap { $0 > 0 ? $0 : nil }
+    /// Scan time tracks items visited rather than bytes, which a few huge files dominate. The previous scan's count
+    /// excludes unreadable folders, so it beats the volume's inode count once available.
+    private func expectedItemCount() -> Int? {
+        let lastScanned = UserDefaults.standard.integer(forKey: Self.lastScannedItemCountKey)
+        return lastScanned > 0 ? lastScanned : SpaceAnalyser.dataVolumeItemCount
     }
 }

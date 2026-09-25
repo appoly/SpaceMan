@@ -28,7 +28,7 @@ nonisolated struct DiskCapacity: Sendable {
 nonisolated struct ScanResult: Sendable {
     let categories: [StorageItem]
     let capacity: DiskCapacity?
-    let scannedBytes: Int64
+    let scannedItemCount: Int
     let deniedFolderCount: Int
     let duration: Duration
 }
@@ -59,14 +59,17 @@ nonisolated enum SpaceAnalyser {
         return ScanResult(
             categories: categories,
             capacity: DiskCapacity.current(),
-            scannedBytes: root.size,
+            scannedItemCount: stats.itemsScanned,
             deniedFolderCount: deniedPaths.count,
             duration: ContinuousClock.now - start
         )
     }
 
-    static var dataVolumeUsedBytes: Int64? {
-        usedBytes(onVolumeAt: dataVolume)
+    /// Files and folders on the data volume, from its inode usage.
+    static var dataVolumeItemCount: Int? {
+        var info = statfs()
+        guard statfs(dataVolume, &info) == 0, info.f_files > info.f_ffree else { return nil }
+        return Int(info.f_files - info.f_ffree)
     }
 
     static var hasFullDiskAccess: Bool {
