@@ -10,8 +10,15 @@ struct ContentView: View {
         content
             .frame(minWidth: 760, minHeight: 480)
             .inspector(isPresented: $showsInspector) {
-                ItemInspector(item: selection.flatMap { model.result?.allItems.item(withID: $0) })
-                    .inspectorColumnWidth(min: 240, ideal: 300, max: 420)
+                let selectedItem = selection.flatMap { model.result?.allItems.item(withID: $0) }
+                VStack(spacing: 0) {
+                    ItemInspector(item: selectedItem)
+                        .frame(maxHeight: .infinity)
+                    CleanupEligibilityNote(item: selectedItem, cleanup: model.cleanup)
+                    Divider()
+                    CleanupPanel(cleanup: model.cleanup, cleanUp: model.cleanUp(permanently:))
+                }
+                .inspectorColumnWidth(min: 260, ideal: 320, max: 440)
             }
             .onChange(of: mode) {
                 selection = selection.flatMap { model.result?.equivalentID(of: $0, in: mode) }
@@ -66,7 +73,8 @@ struct ContentView: View {
                     items: mode == .categories ? result.categories : result.locations,
                     mode: mode,
                     totalUsed: result.capacity?.used ?? result.categories.reduce(0) { $0 + $1.size },
-                    selection: $selection
+                    selection: $selection,
+                    cleanup: model.cleanup
                 )
             }
         }

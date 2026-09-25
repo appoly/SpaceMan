@@ -7,7 +7,11 @@ A macOS app that shows where your disk space went, grouped by what it *is* ("iOS
 A **Folders** view (toolbar switch) shows the same scan by location instead, with raw folder names and what the
 catalogue identified each one as.
 
-It's read-only: Reveal in Finder and Copy Path, nothing is deleted.
+Tick items (or use the context menu) to add them to the **Clean Up** list in the inspector, which totals their
+on-disk size; **Clean Up…** then moves them to the Trash (via Finder, so it can remove other apps and ask for a
+password) or deletes them immediately, and rescans. Only whole, concrete folders you can delete are selectable:
+categories, groups and catch-alls whose folder also holds separately listed items aren't, and neither are your
+home folder, its top-level folders, `~/Library/*` or top-level system folders.
 
 ## How it works
 

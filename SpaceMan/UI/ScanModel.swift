@@ -34,6 +34,7 @@ final class ScanModel {
     private static let lastScannedItemCountKey = "lastScannedItemCount"
 
     private(set) var phase = Phase.idle
+    let cleanup = CleanupList()
     private(set) var hasFullDiskAccess = SpaceAnalyser.hasFullDiskAccess
     private var scanTask: Task<Void, Never>?
 
@@ -57,8 +58,16 @@ final class ScanModel {
             let result = await Task.detached { await SpaceAnalyser.analyse(stats: stats) }.value
             guard !Task.isCancelled else { return }
             UserDefaults.standard.set(result.scannedItemCount, forKey: Self.lastScannedItemCountKey)
+            cleanup.update(index: result.cleanupIndex)
             phase = .finished(result)
         }
+    }
+
+    /// Rescans afterwards so every figure reflects the freed space.
+    func cleanUp(permanently: Bool) async -> [CleanupFailure] {
+        let failures = await cleanup.cleanUp(permanently: permanently)
+        scan()
+        return failures
     }
 
     /// Scan time tracks items visited rather than bytes, which a few huge files dominate. The previous scan's count

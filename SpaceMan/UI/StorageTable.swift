@@ -27,11 +27,13 @@ struct StorageTable: View {
     @Binding var selection: StorageItem.ID?
     @State private var expanded: Set<StorageItem.ID> = []
     @FocusState private var isFocused: Bool
+    /// Passed explicitly: cells created as rows expand don't reliably inherit the SwiftUI environment.
+    let cleanup: CleanupList
 
     var body: some View {
         Table(of: StorageItem.self, selection: $selection) {
             TableColumn("Name") { item in
-                NameCell(item: item, mode: mode)
+                NameCell(item: item, mode: mode, cleanup: cleanup)
             }
             .width(min: 180, ideal: 420)
 
@@ -60,13 +62,31 @@ struct StorageTable: View {
             return .handled
         }
         .contextMenu(forSelectionType: StorageItem.ID.self) { ids in
-            if let id = ids.first, let path = items.item(withID: id)?.path {
+            if let id = ids.first, let item = items.item(withID: id), let path = item.path {
                 Button("Reveal in Finder") { NSWorkspace.shared.revealInFinder(path) }
                 Button("Copy Path") { NSPasteboard.general.copy(path) }
+                cleanupMenuItem(for: item, at: path)
             }
         } primaryAction: { ids in
             if let id = ids.first {
                 toggleExpansion(of: id)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func cleanupMenuItem(for item: StorageItem, at path: String) -> some View {
+        let eligibility = cleanup.eligibility(of: item)
+        if eligibility.showsCheckbox {
+            Divider()
+            switch cleanup.inclusion(of: path) {
+            case .included:
+                Button("Remove from Clean Up") { cleanup.remove(path) }
+            case .includedViaAncestor:
+                Button("Included via an Enclosing Folder") {}.disabled(true)
+            case .excluded:
+                Button("Add to Clean Up") { cleanup.add(item) }
+                    .disabled(eligibility != .eligible)
             }
         }
     }
@@ -105,6 +125,46 @@ private struct StorageRows: TableRowContent {
     }
 }
 
+private struct CleanupCheckbox: View {
+    let item: StorageItem
+    let cleanup: CleanupList
+
+    var body: some View {
+        let eligibility = cleanup.eligibility(of: item)
+        if eligibility.showsCheckbox, let path = item.path {
+            let inclusion = cleanup.inclusion(of: path)
+            Toggle("Include in Clean Up", isOn: Binding {
+                switch inclusion {
+                case .included, .includedViaAncestor: true
+                case .excluded: false
+                }
+            } set: { _ in
+                cleanup.toggle(item)
+            })
+            .toggleStyle(.checkbox)
+            .labelsHidden()
+            .disabled(!isToggleable(eligibility, inclusion))
+            .help(helpText(eligibility, inclusion))
+        }
+    }
+
+    private func isToggleable(_ eligibility: CleanupEligibility, _ inclusion: CleanupList.Inclusion) -> Bool {
+        switch inclusion {
+        case .included: true
+        case .includedViaAncestor: false
+        case .excluded: eligibility == .eligible
+        }
+    }
+
+    private func helpText(_ eligibility: CleanupEligibility, _ inclusion: CleanupList.Inclusion) -> String {
+        switch inclusion {
+        case .included: "Included in Clean Up"
+        case let .includedViaAncestor(ancestor): "Included via \(ancestor.abbreviatingWithTilde)"
+        case .excluded: eligibility.reason ?? "Add to Clean Up"
+        }
+    }
+}
+
 private struct SecondaryCell: View {
     let item: StorageItem
     let mode: StorageViewMode
@@ -125,12 +185,17 @@ private struct SecondaryCell: View {
     }
 }
 
+/// The tick box lives in the name cell because the outline's indentation and disclosure arrows always occupy the
+/// table's first column.
 private struct NameCell: View {
     let item: StorageItem
     let mode: StorageViewMode
+    let cleanup: CleanupList
 
     var body: some View {
         HStack(spacing: 6) {
+            CleanupCheckbox(item: item, cleanup: cleanup)
+                .frame(width: 14)
             ItemIcon(item: item, mode: mode)
             Text(item.title)
                 .fontWeight(item.kind == .category ? .semibold : .regular)
