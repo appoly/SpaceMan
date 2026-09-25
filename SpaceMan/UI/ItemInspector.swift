@@ -14,11 +14,9 @@ struct ItemInspector: View {
                             .foregroundStyle(item.category.colour)
                         Text(item.title)
                             .font(.title3.bold())
-                            .textSelection(.enabled)
                         if let subtitle = item.subtitle {
                             Text(subtitle)
                                 .foregroundStyle(.secondary)
-                                .textSelection(.enabled)
                         }
                     }
 
@@ -46,7 +44,6 @@ struct ItemInspector: View {
                             Text(path)
                                 .font(.callout.monospaced())
                                 .foregroundStyle(.secondary)
-                                .textSelection(.enabled)
                             HStack {
                                 Button("Reveal in Finder") { NSWorkspace.shared.revealInFinder(path) }
                                 Button("Copy Path") { NSPasteboard.general.copy(path) }
@@ -75,7 +72,6 @@ private struct UnreadableFolders: View {
                     Text(path)
                         .font(.caption.monospaced())
                         .foregroundStyle(.secondary)
-                        .textSelection(.enabled)
                 }
                 Button("Copy List") { NSPasteboard.general.copy(paths.joined(separator: "\n")) }
                     .padding(.top, 4)
