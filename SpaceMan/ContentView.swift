@@ -18,7 +18,7 @@ struct ContentView: View {
                     Divider()
                     CleanupPanel(cleanup: model.cleanup, cleanUp: model.cleanUp(permanently:))
                 }
-                .inspectorColumnWidth(min: 260, ideal: 320, max: 440)
+                .inspectorColumnWidth(min: 260, ideal: 260, max: 440)
             }
             .onChange(of: mode) {
                 selection = selection.flatMap { model.result?.equivalentID(of: $0, in: mode) }
