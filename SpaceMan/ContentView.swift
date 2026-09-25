@@ -60,30 +60,40 @@ struct ContentView: View {
 }
 
 private struct ScanProgressView: View {
+    private static let remainingFormat = Duration.UnitsFormatStyle(allowedUnits: [.minutes, .seconds], width: .wide)
+
     let progress: ScanModel.Progress
 
     var body: some View {
-        VStack(spacing: 12) {
-            if let fraction = progress.fractionComplete {
-                ProgressView(value: fraction) {
-                    Text("Scanning…").font(.headline)
-                } currentValueLabel: {
-                    Text(fraction.formatted(.percent.precision(.fractionLength(0))))
+        TimelineView(.periodic(from: progress.started, by: 0.25)) { timeline in
+            VStack(spacing: 12) {
+                if let fraction = progress.fractionComplete {
+                    ProgressView(value: fraction) {
+                        Text("Scanning…").font(.headline)
+                    } currentValueLabel: {
+                        HStack {
+                            Text(fraction.formatted(.percent.precision(.fractionLength(0))))
+                            Spacer()
+                            if let remaining = progress.estimatedTimeRemaining(at: timeline.date) {
+                                Text("About \(remaining.formatted(Self.remainingFormat)) left")
+                            }
+                        }
                         .monospacedDigit()
+                    }
+                    .frame(width: 320)
+                } else {
+                    ProgressView()
+                    Text("Scanning…").font(.headline)
                 }
-                .frame(width: 320)
-            } else {
-                ProgressView()
-                Text("Scanning…").font(.headline)
+                HStack(spacing: 12) {
+                    Text("\(progress.itemCount.formatted()) items")
+                    Text(progress.started, style: .timer)
+                }
+                .monospacedDigit()
+                .foregroundStyle(.secondary)
             }
-            HStack(spacing: 12) {
-                Text("\(progress.itemCount.formatted()) items")
-                Text(progress.started, style: .timer)
-            }
-            .monospacedDigit()
-            .foregroundStyle(.secondary)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 

@@ -3,11 +3,26 @@ import Observation
 
 @Observable
 final class ScanModel {
+    /// Read live by a main-thread timeline: the scan saturates the cooperative pool, so an async polling loop there
+    /// wouldn't get scheduled until it finished.
     struct Progress {
-        let itemCount: Int
+        let stats: ScanStats
         let started: Date
-        /// `nil` until there's something to estimate against.
-        let fractionComplete: Double?
+        let expectedItemCount: Int?
+
+        var itemCount: Int {
+            stats.itemsScanned
+        }
+
+        var fractionComplete: Double? {
+            expectedItemCount.map { min(0.99, Double(itemCount) / Double($0)) }
+        }
+
+        func estimatedTimeRemaining(at date: Date) -> Duration? {
+            let elapsed = date.timeIntervalSince(started)
+            guard let fraction = fractionComplete, fraction >= 0.05, elapsed >= 2 else { return nil }
+            return .seconds(elapsed * (1 - fraction) / fraction)
+        }
     }
 
     enum Phase {
@@ -36,22 +51,10 @@ final class ScanModel {
         scanTask?.cancel()
         hasFullDiskAccess = SpaceAnalyser.hasFullDiskAccess
         let stats = ScanStats()
-        let started = Date()
-        let expectedItems = expectedItemCount()
-        phase = .scanning(Progress(itemCount: 0, started: started, fractionComplete: expectedItems.map { _ in 0 }))
+        phase = .scanning(Progress(stats: stats, started: Date(), expectedItemCount: expectedItemCount()))
 
         scanTask = Task {
-            let progress = Task {
-                while !Task.isCancelled {
-                    let fraction = expectedItems.map { min(0.99, Double(stats.itemsScanned) / Double($0)) }
-                    phase = .scanning(
-                        Progress(itemCount: stats.itemsScanned, started: started, fractionComplete: fraction)
-                    )
-                    try? await Task.sleep(for: .milliseconds(200))
-                }
-            }
             let result = await Task.detached { await SpaceAnalyser.analyse(stats: stats) }.value
-            progress.cancel()
             guard !Task.isCancelled else { return }
             UserDefaults.standard.set(result.scannedItemCount, forKey: Self.lastScannedItemCountKey)
             phase = .finished(result)
