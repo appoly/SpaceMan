@@ -111,4 +111,9 @@ nonisolated struct CleanupIndex: Sendable {
         guard isDirectory, access(path, W_OK) != 0 else { return true }
         return errno == EPERM && path.hasSuffix(".app")
     }
+
+    /// Without App Management, other apps' bundles report EPERM even when their folder is writable.
+    static func isBlockedByAppManagement(_ path: String) -> Bool {
+        path.hasSuffix(".app") && access(path, W_OK) != 0 && errno == EPERM
+    }
 }

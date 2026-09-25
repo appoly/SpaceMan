@@ -5,6 +5,8 @@ struct CleanupPanel: View {
     let cleanUp: (_ permanently: Bool) async -> [CleanupFailure]
     @State private var isConfirming = false
     @State private var failures: [CleanupFailure] = []
+    @State private var blockedAppCount = 0
+    @Environment(\.openURL) private var openURL
     /// Sizes the list to its rows up to a cap. `fixedSize` would instead demand the rows' height at whatever
     /// width macOS proposes while computing the window's minimum size, pinning the window to full height.
     @State private var entriesHeight: CGFloat = 0
@@ -36,6 +38,7 @@ struct CleanupPanel: View {
             }
 
             Button {
+                blockedAppCount = cleanup.appsBlockedByAppManagement.count
                 isConfirming = true
             } label: {
                 if cleanup.isCleaning {
@@ -60,10 +63,19 @@ struct CleanupPanel: View {
                 Button("Move to Trash") { run(permanently: false) }
                 Button("Delete Immediately", role: .destructive) { run(permanently: true) }
             }
+            if blockedAppCount > 0 {
+                Button("Open App Management Settings") { openURL(PrivacySettings.appManagement.url) }
+            }
         } message: {
             Text(confirmationMessage)
         }
         .alert("Some items couldn't be removed", isPresented: hasFailures) {
+            if failures.contains(where: \.isApp) {
+                Button("Open App Management Settings") {
+                    openURL(PrivacySettings.appManagement.url)
+                    failures = []
+                }
+            }
             Button("OK") { failures = [] }
         } message: {
             Text(failures.map { "\($0.path.abbreviatingWithTilde): \($0.message)" }.joined(separator: "\n\n"))
@@ -81,11 +93,18 @@ struct CleanupPanel: View {
     private var confirmationMessage: String {
         let trash = "Everything currently in the Trash will be deleted permanently. This can't be undone."
         let others = "Moving to the Trash frees the space once you empty it. Deleting immediately can't be undone."
-        switch (cleanup.includesTrash, cleanup.includesItemsBesidesTrash) {
-        case (true, false): return trash
-        case (true, true): return trash + "\n\nFor the other items: " + others
-        case (false, _): return others
+        let message = switch (cleanup.includesTrash, cleanup.includesItemsBesidesTrash) {
+        case (true, false): trash
+        case (true, true): trash + "\n\nFor the other items: " + others
+        case (false, _): others
         }
+        return blockedAppCount > 0 ? message + "\n\n" + appManagementNote : message
+    }
+
+    private var appManagementNote: String {
+        let apps = blockedAppCount == 1 ? "1 app" : "\(blockedAppCount) apps"
+        return "SpaceMan doesn't have App Management permission, so it can only move \(apps) to the Trash, " +
+            "not delete them immediately. Grant it in System Settings, then relaunch SpaceMan."
     }
 
     private var confirmationTitle: String {

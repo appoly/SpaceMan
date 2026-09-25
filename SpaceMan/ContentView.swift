@@ -135,7 +135,7 @@ private struct FullDiskAccessBanner: View {
             }
             Spacer()
             Button("Open Settings") {
-                openURL(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles")!)
+                openURL(PrivacySettings.fullDiskAccess.url)
             }
         }
         .padding(10)

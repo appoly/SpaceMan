@@ -14,6 +14,10 @@ struct CleanupFailure: Identifiable {
     let message: String
 
     var id: String { path }
+
+    var isApp: Bool {
+        path.hasSuffix(".app")
+    }
 }
 
 @Observable
@@ -40,6 +44,11 @@ final class CleanupList {
 
     var includesItemsBesidesTrash: Bool {
         entries.contains { $0.path != index?.trashPath }
+    }
+
+    /// Checked live rather than from the scan, in case the permission was granted since.
+    var appsBlockedByAppManagement: [CleanupEntry] {
+        entries.filter { CleanupIndex.isBlockedByAppManagement($0.path) }
     }
 
     var totalSize: Int64 {
