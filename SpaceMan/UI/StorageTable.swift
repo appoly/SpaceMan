@@ -32,6 +32,9 @@ struct StorageTable: View {
         }
         .focused($isFocused)
         .onAppear { isFocused = true }
+        .onChange(of: selection) {
+            NSApp.keyWindow?.reclaimFocusForTable()
+        }
         .onKeyPress(.space) {
             guard let selection else { return .ignored }
             toggleExpansion(of: selection)
