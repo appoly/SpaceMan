@@ -5,18 +5,15 @@ struct StorageTable: View {
     let categories: [StorageItem]
     let totalUsed: Int64
     @Binding var selection: StorageItem.ID?
+    @State private var expanded: Set<StorageItem.ID> = []
+    @FocusState private var isFocused: Bool
 
     var body: some View {
-        Table(categories, children: \.children, selection: $selection) {
+        Table(of: StorageItem.self, selection: $selection) {
             TableColumn("Name") { item in
                 NameCell(item: item)
             }
             .width(min: 280, ideal: 420)
-
-            TableColumn("Size") { item in
-                SizeCell(size: item.size, share: totalUsed > 0 ? Double(item.size) / Double(totalUsed) : 0)
-            }
-            .width(min: 150, ideal: 180, max: 240)
 
             TableColumn("Location") { item in
                 Text(item.kind == .remainder ? "" : item.path?.abbreviatingWithTilde ?? "")
@@ -25,6 +22,20 @@ struct StorageTable: View {
                     .lineLimit(1)
                     .help(item.path ?? "")
             }
+
+            TableColumn("Size") { item in
+                SizeCell(size: item.size, share: totalUsed > 0 ? Double(item.size) / Double(totalUsed) : 0)
+            }
+            .width(min: 150, ideal: 180, max: 240)
+        } rows: {
+            StorageRows(items: categories, expanded: $expanded)
+        }
+        .focused($isFocused)
+        .onAppear { isFocused = true }
+        .onKeyPress(.space) {
+            guard let selection else { return .ignored }
+            toggleExpansion(of: selection)
+            return .handled
         }
         .contextMenu(forSelectionType: StorageItem.ID.self) { ids in
             if let id = ids.first, let path = categories.item(withID: id)?.path {
@@ -32,8 +43,37 @@ struct StorageTable: View {
                 Button("Copy Path") { NSPasteboard.general.copy(path) }
             }
         } primaryAction: { ids in
-            if let id = ids.first, let path = categories.item(withID: id)?.path {
-                NSWorkspace.shared.revealInFinder(path)
+            if let id = ids.first {
+                toggleExpansion(of: id)
+            }
+        }
+    }
+
+    /// Items with children expand or collapse; leaves reveal themselves in Finder instead.
+    private func toggleExpansion(of id: StorageItem.ID) {
+        guard let item = categories.item(withID: id) else { return }
+        if item.children != nil {
+            if expanded.remove(id) == nil {
+                expanded.insert(id)
+            }
+        } else if let path = item.path {
+            NSWorkspace.shared.revealInFinder(path)
+        }
+    }
+}
+
+private struct StorageRows: TableRowContent {
+    let items: [StorageItem]
+    @Binding var expanded: Set<StorageItem.ID>
+
+    var tableRowBody: some TableRowContent<StorageItem> {
+        ForEach(items) { item in
+            if let children = item.children {
+                DisclosureTableRow(item, isExpanded: $expanded.containing(item.id)) {
+                    StorageRows(items: children, expanded: $expanded)
+                }
+            } else {
+                TableRow(item)
             }
         }
     }
