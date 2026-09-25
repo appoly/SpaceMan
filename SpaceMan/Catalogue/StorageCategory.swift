@@ -10,6 +10,7 @@ nonisolated enum StorageCategory: String, CaseIterable, Sendable {
     case browsers
     case caches
     case userFiles
+    case trash
     case macOS
     case other
 
@@ -24,6 +25,7 @@ nonisolated enum StorageCategory: String, CaseIterable, Sendable {
         case .browsers: "Web browsers"
         case .caches: "Caches & temporary files"
         case .userFiles: "Your files"
+        case .trash: "Trash"
         case .macOS: "macOS"
         case .other: "Other"
         }
@@ -40,6 +42,7 @@ nonisolated enum StorageCategory: String, CaseIterable, Sendable {
         case .browsers: "globe"
         case .caches: "arrow.clockwise.circle"
         case .userFiles: "person.crop.square"
+        case .trash: "trash"
         case .macOS: "apple.logo"
         case .other: "questionmark.folder"
         }
@@ -56,6 +59,7 @@ nonisolated enum StorageCategory: String, CaseIterable, Sendable {
         case .browsers: .cyan
         case .caches: .pink
         case .userFiles: .indigo
+        case .trash: .red
         case .macOS: .gray
         case .other: .brown
         }

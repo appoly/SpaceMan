@@ -30,6 +30,9 @@ nonisolated extension Catalogue {
         Rule(.appleDevelopment, nil, "/Library/Developer/CoreSimulator", "Other simulator system data",
              children: .folderTree),
 
+        Rule(.appleDevelopment, nil, "~/Library/Containers/com.apple.CoreDevice.CoreDeviceService", "CoreDevice data",
+             children: .folderTree,
+             about: "Data for CoreDevice, the service Xcode uses to talk to physical devices."),
         Rule(.appleDevelopment, nil, "~/Library/Developer/CoreSimulator/Devices", "Simulator devices",
              children: .named(.simulatorDevice),
              about: "Each simulated device's installed apps, data and settings. `xcrun simctl delete unavailable` " +
@@ -320,7 +323,7 @@ nonisolated extension Catalogue {
         Rule(.userFiles, nil, "~/Pictures", "Pictures", children: .folderTree),
         Rule(.userFiles, nil, "~/Movies", "Movies", children: .folderTree),
         Rule(.userFiles, nil, "~/Music", "Music", children: .folderTree),
-        Rule(.userFiles, nil, "~/.Trash", "Trash", about: "Deleted files. Empty the Trash to reclaim this space."),
+        Rule(.trash, nil, "~/.Trash", "Your Trash", about: "Deleted files. Empty the Trash to reclaim this space."),
         Rule(.userFiles, nil, "~/Library/Mobile Documents", "iCloud Drive (downloaded)", children: .folderTree,
              about: "Local copies of iCloud Drive files. Right-click › Remove Download in Finder frees space but " +
                  "keeps them in iCloud."),
