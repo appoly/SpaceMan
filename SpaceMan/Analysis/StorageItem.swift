@@ -1,5 +1,13 @@
 nonisolated struct StorageItem: Identifiable, Hashable, Sendable {
+    enum Kind: Sendable {
+        case category
+        case group
+        case entry
+        case remainder
+    }
+
     let id: String
+    var kind: Kind = .entry
     let title: String
     var subtitle: String?
     var path: String?
@@ -7,6 +15,7 @@ nonisolated struct StorageItem: Identifiable, Hashable, Sendable {
     let category: StorageCategory
     var about: String?
     var flags: [String] = []
+    var isFile = false
     /// `nil` for leaves, as `Table`/`OutlineGroup` require.
     var children: [StorageItem]?
 
@@ -18,5 +27,17 @@ nonisolated struct StorageItem: Identifiable, Hashable, Sendable {
 extension [StorageItem] {
     nonisolated var sortedBySize: [StorageItem] {
         sorted { $0.size > $1.size }
+    }
+
+    nonisolated func item(withID id: StorageItem.ID) -> StorageItem? {
+        for item in self {
+            if item.id == id {
+                return item
+            }
+            if let match = item.children?.item(withID: id) {
+                return match
+            }
+        }
+        return nil
     }
 }

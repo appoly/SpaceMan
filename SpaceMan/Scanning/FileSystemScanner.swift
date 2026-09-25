@@ -14,6 +14,10 @@ nonisolated final class ScanStats: Sendable {
     let deniedPaths = Mutex<[String]>([])
     private let seenHardLinks = Mutex<Set<UInt64>>([])
 
+    var itemsScanned: Int {
+        itemCount.load(ordering: .relaxed)
+    }
+
     func isFirstSighting(ofHardLink fileID: UInt64) -> Bool {
         seenHardLinks.withLock { $0.insert(fileID).inserted }
     }

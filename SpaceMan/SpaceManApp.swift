@@ -10,8 +10,9 @@ import SwiftUI
 @main
 struct SpaceManApp: App {
     var body: some Scene {
-        WindowGroup {
+        Window("SpaceMan", id: "main") {
             ContentView()
         }
+        .defaultSize(width: 1180, height: 780)
     }
 }

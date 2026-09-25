@@ -100,6 +100,7 @@ nonisolated struct Classifier {
             category: category,
             about: match.rule.about,
             flags: name.flags,
+            isFile: !match.node.isDirectory,
             children: children
         )
     }
@@ -111,7 +112,7 @@ nonisolated struct Classifier {
             let name = namer.name(for: childPath, context: context)
             return StorageItem(
                 id: childPath, title: name.title, subtitle: name.subtitle, path: childPath, size: size,
-                category: category, flags: name.flags, children: nil
+                category: category, flags: name.flags, isFile: !child.isDirectory, children: nil
             )
         }
         return withRemainder(children, total: total, path: path, category: category)
@@ -122,7 +123,7 @@ nonisolated struct Classifier {
     ) -> [StorageItem]? {
         let children = unclaimedChildren(of: node, at: path, claimed: claimed).map { child, childPath, size in
             var item = StorageItem(
-                id: childPath, title: child.name, path: childPath, size: size, category: category,
+                id: childPath, title: child.name, path: childPath, size: size, category: category, isFile: !child.isDirectory,
                 children: folderTree(child, at: childPath, total: size, category: category, claimed: claimed, compressChains: compressChains)
             )
             if compressChains {
@@ -147,7 +148,7 @@ nonisolated struct Classifier {
         let remainder = total - children.reduce(0) { $0 + $1.size }
         guard remainder >= minimumSize else { return children.sortedBySize }
         let rest = StorageItem(
-            id: path + "#remainder", title: "Smaller items", path: path, size: remainder, category: category, children: nil
+            id: path + "#remainder", kind: .remainder, title: "Smaller items", path: path, size: remainder, category: category, children: nil
         )
         return (children + [rest]).sortedBySize
     }
@@ -157,7 +158,7 @@ nonisolated struct Classifier {
         guard let only = item.children?.first, item.children?.count == 1 else { return item }
         var merged = StorageItem(
             id: only.id, title: item.title.appendingPathComponent(only.title), path: only.path, size: only.size,
-            category: only.category, children: only.children
+            category: only.category, isFile: only.isFile, children: only.children
         )
         merged = collapsingSingleChildChain(merged)
         return merged
@@ -176,13 +177,13 @@ nonisolated struct Classifier {
 
         let groupItems = groups.map { title, items in
             StorageItem(
-                id: "group:\(category.rawValue):\(title)", title: title, size: items.reduce(0) { $0 + $1.size },
+                id: "group:\(category.rawValue):\(title)", kind: .group, title: title, size: items.reduce(0) { $0 + $1.size },
                 category: category, children: items.sortedBySize
             )
         }
         let children = (groupItems + ungrouped).sortedBySize
         return StorageItem(
-            id: "category:\(category.rawValue)", title: category.title, size: children.reduce(0) { $0 + $1.size },
+            id: "category:\(category.rawValue)", kind: .category, title: category.title, size: children.reduce(0) { $0 + $1.size },
             category: category, children: children
         )
     }
