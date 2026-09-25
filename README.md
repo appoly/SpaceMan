@@ -32,6 +32,9 @@ decoding).
 
 Open `SpaceMan.xcodeproj` and run. The app is unsandboxed so it can read arbitrary paths.
 
+To distribute, archive and use Organizer › Distribute App › Direct Distribution, which signs with the team's
+Developer ID Application certificate and notarises the app (Hardened Runtime is already on).
+
 Build with an Xcode whose SDK matches the running macOS: a macOS 27.1 beta SDK build crashes in SwiftUI's state
 initialisation on macOS 27.0.
 
