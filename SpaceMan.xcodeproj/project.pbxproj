@@ -1,0 +1,539 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 110;
+	objects = {
+
+/* Begin PBXContainerItemProxy section */
+		F480368D30667C2400975256 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F480367730667C2200975256 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F480367E30667C2200975256;
+			remoteInfo = SpaceMan;
+		};
+		F480369730667C2400975256 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F480367730667C2200975256 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F480367E30667C2200975256;
+			remoteInfo = SpaceMan;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		F480367F30667C2200975256 /* SpaceMan.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SpaceMan.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F480368C30667C2400975256 /* SpaceManTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SpaceManTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		F480369630667C2400975256 /* SpaceManUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SpaceManUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		F480368130667C2200975256 /* SpaceMan */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = SpaceMan;
+			sourceTree = "<group>";
+		};
+		F480368F30667C2400975256 /* SpaceManTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = SpaceManTests;
+			sourceTree = "<group>";
+		};
+		F480369930667C2400975256 /* SpaceManUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = SpaceManUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		F480367C30667C2200975256 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+		F480368930667C2400975256 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+		F480369330667C2400975256 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		F480367630667C2200975256 = {
+			isa = PBXGroup;
+			children = (
+				F480368130667C2200975256 /* SpaceMan */,
+				F480368F30667C2400975256 /* SpaceManTests */,
+				F480369930667C2400975256 /* SpaceManUITests */,
+				F480368030667C2200975256 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		F480368030667C2200975256 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F480367F30667C2200975256 /* SpaceMan.app */,
+				F480368C30667C2400975256 /* SpaceManTests.xctest */,
+				F480369630667C2400975256 /* SpaceManUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		F480367E30667C2200975256 /* SpaceMan */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F480369E30667C2400975256 /* Build configuration list for PBXNativeTarget "SpaceMan" */;
+			buildPhases = (
+				F480367B30667C2200975256 /* Sources */,
+				F480367C30667C2200975256 /* Frameworks */,
+				F480367D30667C2200975256 /* Resources */,
+			);
+			buildRules = (
+			);
+			fileSystemSynchronizedGroups = (
+				F480368130667C2200975256 /* SpaceMan */,
+			);
+			name = SpaceMan;
+			productName = SpaceMan;
+			productReference = F480367F30667C2200975256 /* SpaceMan.app */;
+			productType = "com.apple.product-type.application";
+		};
+		F480368B30667C2400975256 /* SpaceManTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F48036A130667C2400975256 /* Build configuration list for PBXNativeTarget "SpaceManTests" */;
+			buildPhases = (
+				F480368830667C2400975256 /* Sources */,
+				F480368930667C2400975256 /* Frameworks */,
+				F480368A30667C2400975256 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F480368E30667C2400975256 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				F480368F30667C2400975256 /* SpaceManTests */,
+			);
+			name = SpaceManTests;
+			productName = SpaceManTests;
+			productReference = F480368C30667C2400975256 /* SpaceManTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		F480369530667C2400975256 /* SpaceManUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F48036A430667C2400975256 /* Build configuration list for PBXNativeTarget "SpaceManUITests" */;
+			buildPhases = (
+				F480369230667C2400975256 /* Sources */,
+				F480369330667C2400975256 /* Frameworks */,
+				F480369430667C2400975256 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F480369830667C2400975256 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				F480369930667C2400975256 /* SpaceManUITests */,
+			);
+			name = SpaceManUITests;
+			productName = SpaceManUITests;
+			productReference = F480369630667C2400975256 /* SpaceManUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		F480367730667C2200975256 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2710;
+				LastUpgradeCheck = 2710;
+				TargetAttributes = {
+					F480367E30667C2200975256 = {
+						CreatedOnToolsVersion = 27.1;
+					};
+					F480368B30667C2400975256 = {
+						CreatedOnToolsVersion = 27.1;
+						TestTargetID = F480367E30667C2200975256;
+					};
+					F480369530667C2400975256 = {
+						CreatedOnToolsVersion = 27.1;
+						TestTargetID = F480367E30667C2200975256;
+					};
+				};
+			};
+			buildConfigurationList = F480367A30667C2200975256 /* Build configuration list for PBXProject "SpaceMan" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = F480367630667C2200975256;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = F480368030667C2200975256 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F480367E30667C2200975256 /* SpaceMan */,
+				F480368B30667C2400975256 /* SpaceManTests */,
+				F480369530667C2400975256 /* SpaceManUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		F480367D30667C2200975256 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
+		F480368A30667C2400975256 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
+		F480369430667C2400975256 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		F480367B30667C2200975256 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
+		F480368830667C2400975256 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
+		F480369230667C2400975256 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		F480368E30667C2400975256 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F480367E30667C2200975256 /* SpaceMan */;
+			targetProxy = F480368D30667C2400975256 /* PBXContainerItemProxy */;
+		};
+		F480369830667C2400975256 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F480367E30667C2200975256 /* SpaceMan */;
+			targetProxy = F480369730667C2400975256 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		F480369C30667C2400975256 /* Debug configuration for PBXProject "SpaceMan" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		F480369D30667C2400975256 /* Release configuration for PBXProject "SpaceMan" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		F480369F30667C2400975256 /* Debug configuration for PBXNativeTarget "SpaceMan" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = uk.co.appoly.SpaceMan;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		F48036A030667C2400975256 /* Release configuration for PBXNativeTarget "SpaceMan" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = uk.co.appoly.SpaceMan;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		F48036A230667C2400975256 /* Debug configuration for PBXNativeTarget "SpaceManTests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = uk.co.appoly.SpaceManTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SpaceMan.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SpaceMan";
+			};
+			name = Debug;
+		};
+		F48036A330667C2400975256 /* Release configuration for PBXNativeTarget "SpaceManTests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = uk.co.appoly.SpaceManTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SpaceMan.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SpaceMan";
+			};
+			name = Release;
+		};
+		F48036A530667C2400975256 /* Debug configuration for PBXNativeTarget "SpaceManUITests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = uk.co.appoly.SpaceManUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+				TEST_TARGET_NAME = SpaceMan;
+			};
+			name = Debug;
+		};
+		F48036A630667C2400975256 /* Release configuration for PBXNativeTarget "SpaceManUITests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = uk.co.appoly.SpaceManUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+				TEST_TARGET_NAME = SpaceMan;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		F480367A30667C2200975256 /* Build configuration list for PBXProject "SpaceMan" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F480369C30667C2400975256 /* Debug configuration for PBXProject "SpaceMan" */,
+				F480369D30667C2400975256 /* Release configuration for PBXProject "SpaceMan" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		F480369E30667C2400975256 /* Build configuration list for PBXNativeTarget "SpaceMan" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F480369F30667C2400975256 /* Debug configuration for PBXNativeTarget "SpaceMan" */,
+				F48036A030667C2400975256 /* Release configuration for PBXNativeTarget "SpaceMan" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		F48036A130667C2400975256 /* Build configuration list for PBXNativeTarget "SpaceManTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F48036A230667C2400975256 /* Debug configuration for PBXNativeTarget "SpaceManTests" */,
+				F48036A330667C2400975256 /* Release configuration for PBXNativeTarget "SpaceManTests" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		F48036A430667C2400975256 /* Build configuration list for PBXNativeTarget "SpaceManUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F48036A530667C2400975256 /* Debug configuration for PBXNativeTarget "SpaceManUITests" */,
+				F48036A630667C2400975256 /* Release configuration for PBXNativeTarget "SpaceManUITests" */,
+			);
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = F480367730667C2200975256 /* Project object */;
+	validationLevel = 1;
+}
