@@ -13,6 +13,7 @@
   <img alt="macOS 26+" src="https://img.shields.io/badge/macOS-26%2B-000?logo=apple">
   <img alt="Swift 6" src="https://img.shields.io/badge/Swift-6-F05138?logo=swift&logoColor=white">
   <img alt="SwiftUI" src="https://img.shields.io/badge/UI-SwiftUI-0A84FF">
+  <a href="LICENSE"><img alt="MIT licence" src="https://img.shields.io/badge/licence-MIT-green"></a>
 </p>
 
 <p align="center">
@@ -99,3 +100,7 @@ arbitrary paths.
 
 Full Disk Access is tied to the code signature, which is why the project signs with a development team: an
 ad-hoc-signed build loses the grant on every rebuild.
+
+## Licence
+
+SpaceMan is released under the [MIT licence](LICENSE). Copyright © 2026 Appoly Ltd.
