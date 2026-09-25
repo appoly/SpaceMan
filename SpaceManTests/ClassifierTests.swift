@@ -116,3 +116,30 @@ struct NamerTests {
         #expect(!name(.dyldCache, "/x/25A2").flags.isEmpty)
     }
 }
+
+struct LocationTreeTests {
+    @Test func foldersKeepRawNamesAndCarryWhatTheyWereIdentifiedAs() throws {
+        let derivedData = FSNode(name: "DerivedData", isDirectory: true, size: 50, children: [])
+        let root = FSNode(name: "/", isDirectory: true, size: 60, children: [
+            FSNode(name: "Users", isDirectory: true, size: 60, children: [derivedData])
+        ])
+        let identified = StorageItem(
+            id: "/Users/DerivedData", title: "Xcode build products", path: "/Users/DerivedData", size: 50,
+            category: .appleDevelopment
+        )
+        let category = StorageItem(
+            id: "category:appleDevelopment", kind: .category, title: "Dev", size: 50, category: .appleDevelopment,
+            children: [identified]
+        )
+
+        let locations = LocationTree.items(root: root, categories: [category], minimumSize: 5)
+
+        let users = try #require(locations.first)
+        #expect(users.title == "Users")
+        #expect(users.identifiedAs == nil)
+        #expect(users.children?.map(\.title) == ["DerivedData", "Smaller items"])
+        let folder = try #require(users.children?.first)
+        #expect(folder.identifiedAs == "Xcode build products")
+        #expect(folder.category == .appleDevelopment)
+    }
+}

@@ -27,6 +27,7 @@ nonisolated struct DiskCapacity: Sendable {
 
 nonisolated struct ScanResult: Sendable {
     let categories: [StorageItem]
+    let locations: [StorageItem]
     let capacity: DiskCapacity?
     let scannedItemCount: Int
     let deniedFolderCount: Int
@@ -58,6 +59,7 @@ nonisolated enum SpaceAnalyser {
         ).classify(extras: extras)
         return ScanResult(
             categories: categories,
+            locations: LocationTree.items(root: root, categories: categories, minimumSize: retainThreshold),
             capacity: DiskCapacity.current(),
             scannedItemCount: stats.itemsScanned,
             deniedFolderCount: deniedPaths.count,

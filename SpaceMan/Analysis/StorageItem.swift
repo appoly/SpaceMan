@@ -17,6 +17,8 @@ nonisolated struct StorageItem: Identifiable, Hashable, Sendable {
     var flags: [String] = []
     var isFile = false
     var unreadablePaths: [String] = []
+    /// The friendly name, when the folder view shows the raw one.
+    var identifiedAs: String?
     /// `nil` for leaves, as `Table`/`OutlineGroup` require.
     var children: [StorageItem]?
 
@@ -28,6 +30,18 @@ nonisolated struct StorageItem: Identifiable, Hashable, Sendable {
 extension [StorageItem] {
     nonisolated var sortedBySize: [StorageItem] {
         sorted { $0.size > $1.size }
+    }
+
+    nonisolated func item(withPath path: String) -> StorageItem? {
+        for item in self {
+            if item.kind == .entry, item.path == path {
+                return item
+            }
+            if let match = item.children?.item(withPath: path) {
+                return match
+            }
+        }
+        return nil
     }
 
     nonisolated func item(withID id: StorageItem.ID) -> StorageItem? {

@@ -4,15 +4,28 @@ struct ContentView: View {
     @State private var model = ScanModel()
     @State private var selection: StorageItem.ID?
     @State private var showsInspector = true
+    @AppStorage("viewMode") private var mode = StorageViewMode.categories
 
     var body: some View {
         content
             .frame(minWidth: 760, minHeight: 480)
             .inspector(isPresented: $showsInspector) {
-                ItemInspector(item: selection.flatMap { model.result?.categories.item(withID: $0) })
+                ItemInspector(item: selection.flatMap { model.result?.allItems.item(withID: $0) })
                     .inspectorColumnWidth(min: 240, ideal: 300, max: 420)
             }
+            .onChange(of: mode) {
+                selection = selection.flatMap { model.result?.equivalentID(of: $0, in: mode) }
+            }
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Picker("View", selection: $mode) {
+                        ForEach(StorageViewMode.allCases, id: \.self) { mode in
+                            Label(mode.title, systemImage: mode.symbol)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .disabled(model.result == nil)
+                }
                 ToolbarItem(placement: .primaryAction) {
                     Button(model.result == nil ? "Scan" : "Rescan", systemImage: "arrow.clockwise") {
                         model.scan()
@@ -50,7 +63,8 @@ struct ContentView: View {
                 .padding()
 
                 StorageTable(
-                    categories: result.categories,
+                    items: mode == .categories ? result.categories : result.locations,
+                    mode: mode,
                     totalUsed: result.capacity?.used ?? result.categories.reduce(0) { $0 + $1.size },
                     selection: $selection
                 )

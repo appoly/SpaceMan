@@ -4,6 +4,9 @@ A macOS app that shows where your disk space went, grouped by what it *is* ("iOS
 "AI models & tools", "Applications"…) rather than where it lives, with friendly names read from on-disk metadata
 (simulator device names, DerivedData project names, runtime versions, app names from bundle IDs).
 
+A **Folders** view (toolbar switch) shows the same scan by location instead, with raw folder names and what the
+catalogue identified each one as.
+
 It's read-only: Reveal in Finder and Copy Path, nothing is deleted.
 
 ## How it works

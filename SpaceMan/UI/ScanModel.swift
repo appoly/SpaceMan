@@ -68,3 +68,19 @@ final class ScanModel {
         return lastScanned > 0 ? lastScanned : SpaceAnalyser.dataVolumeItemCount
     }
 }
+
+extension ScanResult {
+    var allItems: [StorageItem] {
+        categories + locations
+    }
+
+    /// The same path's row in the other view, so switching views keeps the selection where possible.
+    func equivalentID(of id: StorageItem.ID, in mode: StorageViewMode) -> StorageItem.ID? {
+        guard let path = allItems.item(withID: id)?.path else { return nil }
+        let target = switch mode {
+        case .categories: categories
+        case .folders: locations
+        }
+        return target.item(withPath: path)?.id
+    }
+}
