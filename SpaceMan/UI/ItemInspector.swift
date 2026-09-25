@@ -54,7 +54,9 @@ struct ItemInspector: View {
                 .padding()
             }
         } else {
-            ContentUnavailableView("No Selection", systemImage: "sidebar.right", description: Text("Select an item to see what it is."))
+            ContentUnavailableView(
+                "No Selection", systemImage: "sidebar.right", description: Text("Select an item to see what it is.")
+            )
         }
     }
 }

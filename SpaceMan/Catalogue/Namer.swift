@@ -31,6 +31,20 @@ nonisolated enum Namer: Sendable {
     func name(for path: String, context: NamingContext) -> ItemName {
         let folder = path.lastPathComponent
         switch self {
+        case .fixed, .folderName, .appBundle, .bundleIdentifier, .appContainer, .groupContainer, .hashSuffixed:
+            return identifierName(folder: folder, path: path, context: context)
+        case .simulatorRuntimeAsset, .simulatorRuntimeBundle, .simulatorDevice, .deviceSupportFolder,
+             .deviceSupportVersion, .derivedData, .xcarchive:
+            return xcodeName(folder: folder, path: path, context: context)
+        case .swiftPMArtifact, .mobileAsset, .dyldCache, .huggingFaceRepo, .deviceBackup:
+            return systemName(folder: folder, path: path, context: context)
+        }
+    }
+
+    // MARK: - Case groups
+
+    private func identifierName(folder: String, path: String, context: NamingContext) -> ItemName {
+        switch self {
         case let .fixed(title):
             return ItemName(title: title)
         case .folderName:
@@ -40,11 +54,22 @@ nonisolated enum Namer: Sendable {
         case .bundleIdentifier:
             return Self.bundleIdentifierName(folder, context: context)
         case .appContainer:
-            let metadata = NSDictionary(contentsOfFile: path.appendingPathComponent(".com.apple.containermanagerd.metadata.plist"))
-            let identifier = metadata?["MCMMetadataIdentifier"] as? String ?? folder
-            return Self.bundleIdentifierName(identifier, context: context)
+            let metadataPath = path.appendingPathComponent(".com.apple.containermanagerd.metadata.plist")
+            let metadata = NSDictionary(contentsOfFile: metadataPath)
+            return Self.bundleIdentifierName(metadata?["MCMMetadataIdentifier"] as? String ?? folder, context: context)
         case .groupContainer:
             return Self.bundleIdentifierName(Self.strippingGroupPrefix(folder), context: context)
+        case .hashSuffixed:
+            return ItemName(title: folder.replacing(/-[0-9a-f]{8}$/, with: ""), subtitle: nil)
+        case .simulatorRuntimeAsset, .simulatorRuntimeBundle, .simulatorDevice, .deviceSupportFolder,
+             .deviceSupportVersion, .derivedData, .xcarchive, .swiftPMArtifact, .mobileAsset, .dyldCache,
+             .huggingFaceRepo, .deviceBackup:
+            preconditionFailure("name(for:context:) routes this case elsewhere")
+        }
+    }
+
+    private func xcodeName(folder: String, path: String, context: NamingContext) -> ItemName {
+        switch self {
         case .simulatorRuntimeAsset:
             return Self.simulatorRuntimeAssetName(path: path, context: context)
         case .simulatorRuntimeBundle:
@@ -60,8 +85,14 @@ nonisolated enum Namer: Sendable {
             return Self.derivedDataName(path: path)
         case .xcarchive:
             return Self.archiveName(path: path)
-        case .hashSuffixed:
-            return ItemName(title: folder.replacing(/-[0-9a-f]{8}$/, with: ""), subtitle: nil)
+        case .fixed, .folderName, .appBundle, .bundleIdentifier, .appContainer, .groupContainer, .hashSuffixed,
+             .swiftPMArtifact, .mobileAsset, .dyldCache, .huggingFaceRepo, .deviceBackup:
+            preconditionFailure("name(for:context:) routes this case elsewhere")
+        }
+    }
+
+    private func systemName(folder: String, path: String, context: NamingContext) -> ItemName {
+        switch self {
         case .swiftPMArtifact:
             return Self.swiftPMArtifactName(folder)
         case .mobileAsset:
@@ -79,6 +110,10 @@ nonisolated enum Namer: Sendable {
             let device = info?["Device Name"] as? String ?? folder
             let date = (info?["Last Backup Date"] as? Date)?.formatted(date: .abbreviated, time: .omitted)
             return ItemName(title: device, subtitle: date.map { "Backed up \($0)" })
+        case .fixed, .folderName, .appBundle, .bundleIdentifier, .appContainer, .groupContainer, .hashSuffixed,
+             .simulatorRuntimeAsset, .simulatorRuntimeBundle, .simulatorDevice, .deviceSupportFolder,
+             .deviceSupportVersion, .derivedData, .xcarchive:
+            preconditionFailure("name(for:context:) routes this case elsewhere")
         }
     }
 
@@ -87,7 +122,8 @@ nonisolated enum Namer: Sendable {
     private static func appBundleName(path: String) -> ItemName {
         let info = AppBundleInfo(path: path)
         var title = [info.name, info.version].compactMap(\.self).joined(separator: " ")
-        if path.lastPathComponent.localizedCaseInsensitiveContains("beta"), !title.localizedCaseInsensitiveContains("beta") {
+        let isBeta = path.lastPathComponent.localizedCaseInsensitiveContains("beta")
+        if isBeta, !title.localizedCaseInsensitiveContains("beta") {
             title += " beta"
         }
         return ItemName(title: title)
@@ -134,7 +170,9 @@ nonisolated enum Namer: Sendable {
             if let runtime = context.runtime(containing: path) {
                 name.subtitle = runtime.lastUsed
             } else if !runtimes.isEmpty {
-                name.flags.append("Not registered with CoreSimulator (`simctl runtime list`), so simulators can't use it")
+                name.flags.append(
+                    "Not registered with CoreSimulator (`simctl runtime list`), so simulators can't use it"
+                )
             }
         }
         return name
@@ -171,7 +209,7 @@ nonisolated enum Namer: Sendable {
     private static let derivedDataFolderNames = [
         "ModuleCache.noindex": "Clang module cache",
         "SDKExplicitPrecompiledModules": "Precompiled SDK modules",
-        "CompilationCache.noindex": "Compilation cache",
+        "CompilationCache.noindex": "Compilation cache"
     ]
 
     private static func derivedDataName(path: String) -> ItemName {
@@ -206,10 +244,15 @@ nonisolated enum Namer: Sendable {
     private static func swiftPMArtifactName(_ folder: String) -> ItemName {
         guard folder.hasPrefix("https___") || folder.hasPrefix("http___") else { return ItemName(title: folder) }
 
-        let tokens = folder.split(separator: "_").filter { !["zip", "xcframework", "artifactbundle"].contains($0.lowercased()) }
-        guard let nameIndex = tokens.lastIndex(where: { $0.first?.isLetter == true }) else { return ItemName(title: folder) }
+        let tokens = folder.split(separator: "_")
+            .filter { !["zip", "xcframework", "artifactbundle"].contains($0.lowercased()) }
+        guard let nameIndex = tokens.lastIndex(where: { $0.first?.isLetter == true }) else {
+            return ItemName(title: folder)
+        }
         let version = tokens[..<nameIndex].reversed().prefix { $0.allSatisfy(\.isNumber) }.reversed()
-        let title = version.isEmpty ? String(tokens[nameIndex]) : "\(tokens[nameIndex]) \(version.joined(separator: "."))"
+        let title = version.isEmpty
+            ? String(tokens[nameIndex])
+            : "\(tokens[nameIndex]) \(version.joined(separator: "."))"
         return ItemName(title: title)
     }
 
@@ -230,7 +273,7 @@ nonisolated enum Namer: Sendable {
         "UAF_Photos_SpatialPhotosRelive": "Photos spatial scenes",
         "UAF_Translation_Assets": "Translation languages",
         "TTSAXResourceModelAssets": "Accessibility voices",
-        "VoiceTriggerAssetsASMac": "“Hey Siri” voice trigger",
+        "VoiceTriggerAssetsASMac": "“Hey Siri” voice trigger"
     ]
 
     private static func mobileAssetName(_ folder: String) -> ItemName {

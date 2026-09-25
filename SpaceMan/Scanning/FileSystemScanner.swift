@@ -49,7 +49,9 @@ nonisolated struct FileSystemScanner: Sendable {
         await withTaskGroup(of: FSNode.self) { group in
             for subdirectory in listing.subdirectories {
                 group.addTask {
-                    await scanDirectory(path: path.appendingPathComponent(subdirectory), name: subdirectory, depth: depth + 1)
+                    await scanDirectory(
+                        path: path.appendingPathComponent(subdirectory), name: subdirectory, depth: depth + 1
+                    )
                 }
             }
             for await child in group {
@@ -89,14 +91,14 @@ nonisolated struct FileSystemScanner: Sendable {
     private static let bufferSize = 256 * 1024
 
     private func list(_ path: String) -> Listing? {
-        let fd = open(path, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC)
-        guard fd >= 0 else {
+        let descriptor = open(path, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC)
+        guard descriptor >= 0 else {
             if errno == EACCES || errno == EPERM {
                 stats.deniedPaths.withLock { $0.append(path) }
             }
             return nil
         }
-        defer { close(fd) }
+        defer { close(descriptor) }
 
         var request = attrlist()
         request.bitmapcount = u_short(ATTR_BIT_MAP_COUNT)
@@ -110,7 +112,7 @@ nonisolated struct FileSystemScanner: Sendable {
 
         var listing = Listing()
         while true {
-            let count = getattrlistbulk(fd, &request, buffer, Self.bufferSize, UInt64(FSOPT_PACK_INVAL_ATTRS))
+            let count = getattrlistbulk(descriptor, &request, buffer, Self.bufferSize, UInt64(FSOPT_PACK_INVAL_ATTRS))
             guard count > 0 else { break }
 
             var entry = buffer
@@ -138,7 +140,9 @@ nonisolated struct FileSystemScanner: Sendable {
             }
             listing.fileBytes += entry.allocatedSize
             if entry.allocatedSize >= retainThreshold {
-                listing.largeFiles.append(FSNode(name: entry.name, isDirectory: false, size: entry.allocatedSize, children: []))
+                listing.largeFiles.append(
+                    FSNode(name: entry.name, isDirectory: false, size: entry.allocatedSize, children: [])
+                )
             }
         default:
             break

@@ -2,7 +2,9 @@ import Testing
 @testable import SpaceMan
 
 struct ClassifierTests {
-    private let context = NamingContext(home: "/Users/test", osBuild: "26A1", simulatorRuntimes: nil, unavailableSimulatorUDIDs: [])
+    private let context = NamingContext(
+        home: "/Users/test", osBuild: "26A1", simulatorRuntimes: nil, unavailableSimulatorUDIDs: []
+    )
 
     private func folder(_ name: String, _ size: Int64 = 0, _ children: [FSNode] = []) -> FSNode {
         FSNode(name: name, isDirectory: true, size: size + children.reduce(0) { $0 + $1.size }, children: children)
@@ -20,13 +22,13 @@ struct ClassifierTests {
                         folder("Developer", 5, [
                             folder("Xcode", [
                                 folder("DerivedData", [folder("App-abcdefghijklmnopqrstuvwxyzab", 40)]),
-                                folder("Other", 10),
-                            ]),
-                        ]),
+                                folder("Other", 10)
+                            ])
+                        ])
                     ]),
-                    folder("Stuff", 30),
-                ]),
-            ]),
+                    folder("Stuff", 30)
+                ])
+            ])
         ])
     }
 
@@ -37,13 +39,17 @@ struct ClassifierTests {
     @Test func deeperRulesClaimSpaceFromShallowerOnes() throws {
         let categories = classify([
             Rule(.appleDevelopment, nil, "~/Library/Developer", "Developer"),
-            Rule(.appleDevelopment, nil, "~/Library/Developer/Xcode/DerivedData", "DerivedData", children: .named(.derivedData)),
+            Rule(
+                .appleDevelopment, nil, "~/Library/Developer/Xcode/DerivedData", "DerivedData",
+                children: .named(.derivedData)
+            )
         ])
 
         let development = try #require(categories.item(withID: "category:appleDevelopment"))
         #expect(development.children?.map(\.title) == ["DerivedData", "Developer"])
         #expect(development.children?.map(\.size) == [40, 15])
-        #expect(categories.item(withID: "/Users/test/Library/Developer/Xcode/DerivedData/App-abcdefghijklmnopqrstuvwxyzab")?.title == "App")
+        let appItemID = "/Users/test/Library/Developer/Xcode/DerivedData/App-abcdefghijklmnopqrstuvwxyzab"
+        #expect(categories.item(withID: appItemID)?.title == "App")
     }
 
     @Test func unclaimedSpaceLandsInOtherWithCollapsedChains() throws {
@@ -67,16 +73,19 @@ struct ClassifierTests {
 }
 
 struct NamerTests {
-    private let context = NamingContext(home: "/Users/test", osBuild: "26A1", simulatorRuntimes: nil, unavailableSimulatorUDIDs: [])
+    private let context = NamingContext(
+        home: "/Users/test", osBuild: "26A1", simulatorRuntimes: nil, unavailableSimulatorUDIDs: []
+    )
 
     private func name(_ namer: Namer, _ path: String) -> ItemName {
         namer.name(for: path, context: context)
     }
 
     @Test func swiftPMArtifactsDecodeNameAndVersion() {
-        #expect(name(.swiftPMArtifact, "/x/https___dl_google_com_firebase_ios_appads_2_3_0_GoogleAdsOnDeviceConversion_zip").title
-            == "GoogleAdsOnDeviceConversion 2.3.0")
-        #expect(name(.swiftPMArtifact, "/x/https___b_stripecdn_com_content_CaptureCore_xcframework_zip").title == "CaptureCore")
+        let googleAdsPath = "/x/https___dl_google_com_firebase_ios_appads_2_3_0_GoogleAdsOnDeviceConversion_zip"
+        #expect(name(.swiftPMArtifact, googleAdsPath).title == "GoogleAdsOnDeviceConversion 2.3.0")
+        let capturePath = "/x/https___b_stripecdn_com_content_CaptureCore_xcframework_zip"
+        #expect(name(.swiftPMArtifact, capturePath).title == "CaptureCore")
     }
 
     @Test func hashSuffixesAreStripped() {
@@ -85,17 +94,21 @@ struct NamerTests {
     }
 
     @Test func deviceSupportSplitsModelFromVersion() {
-        #expect(name(.deviceSupportVersion, "/x/iPhone18,1 27.0 (24A437)") == ItemName(title: "27.0 (24A437)", subtitle: "iPhone18,1"))
+        let expected = ItemName(title: "27.0 (24A437)", subtitle: "iPhone18,1")
+        #expect(name(.deviceSupportVersion, "/x/iPhone18,1 27.0 (24A437)") == expected)
         #expect(name(.deviceSupportVersion, "/x/17.5 (21F79)").title == "17.5 (21F79)")
     }
 
     @Test func huggingFaceReposBecomeOwnerSlashName() {
-        #expect(name(.huggingFaceRepo, "/x/models--mistralai--Mistral-7B-v0.1") == ItemName(title: "mistralai/Mistral-7B-v0.1", subtitle: "model"))
+        let expected = ItemName(title: "mistralai/Mistral-7B-v0.1", subtitle: "model")
+        #expect(name(.huggingFaceRepo, "/x/models--mistralai--Mistral-7B-v0.1") == expected)
     }
 
     @Test func mobileAssetsUseKnownNamesThenHumanise() {
-        #expect(name(.mobileAsset, "/x/com_apple_MobileAsset_UAF_Siri_Understanding").title == "Siri language understanding")
-        #expect(name(.mobileAsset, "/x/com_apple_MobileAsset_UAF_FM_GenerativeModels").title == "FM Generative Models")
+        let siriPath = "/x/com_apple_MobileAsset_UAF_Siri_Understanding"
+        #expect(name(.mobileAsset, siriPath).title == "Siri language understanding")
+        let fmPath = "/x/com_apple_MobileAsset_UAF_FM_GenerativeModels"
+        #expect(name(.mobileAsset, fmPath).title == "FM Generative Models")
     }
 
     @Test func staleDyldCachesAreFlagged() {

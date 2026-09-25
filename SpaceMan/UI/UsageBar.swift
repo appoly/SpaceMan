@@ -45,7 +45,9 @@ private struct FlowLegend: View {
     var body: some View {
         ViewThatFits(in: .horizontal) {
             HStack(spacing: 14) { entries }
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 190), alignment: .leading)], alignment: .leading, spacing: 4) { entries }
+            LazyVGrid(
+                columns: [GridItem(.adaptive(minimum: 190), alignment: .leading)], alignment: .leading, spacing: 4
+            ) { entries }
         }
         .font(.caption)
     }

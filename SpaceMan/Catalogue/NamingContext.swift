@@ -38,7 +38,9 @@ nonisolated final class NamingContext: Sendable {
     let unavailableSimulatorUDIDs: Set<String>
     private let appNames = Mutex<[String: String?]>([:])
 
-    init(home: String, osBuild: String, simulatorRuntimes: [SimulatorRuntime]?, unavailableSimulatorUDIDs: Set<String>) {
+    init(
+        home: String, osBuild: String, simulatorRuntimes: [SimulatorRuntime]?, unavailableSimulatorUDIDs: Set<String>
+    ) {
         self.home = home
         self.osBuild = osBuild
         self.simulatorRuntimes = simulatorRuntimes
@@ -73,9 +75,8 @@ nonisolated final class NamingContext: Sendable {
     }
 
     private static func lookUpAppName(forBundleIdentifier identifier: String) -> String? {
-        guard let urls = LSCopyApplicationURLsForBundleIdentifier(identifier as CFString, nil)?.takeRetainedValue() as? [URL],
-              let url = urls.first
-        else { return nil }
+        let handle = LSCopyApplicationURLsForBundleIdentifier(identifier as CFString, nil)?.takeRetainedValue()
+        guard let urls = handle as? [URL], let url = urls.first else { return nil }
         return AppBundleInfo(path: url.path).name
     }
 
@@ -84,7 +85,7 @@ nonisolated final class NamingContext: Sendable {
         sysctlbyname("kern.osversion", nil, &size, nil, 0)
         var buffer = [UInt8](repeating: 0, count: size)
         sysctlbyname("kern.osversion", &buffer, &size, nil, 0)
-        return String(decoding: buffer.prefix { $0 != 0 }, as: UTF8.self)
+        return String(bytes: buffer.prefix { $0 != 0 }, encoding: .utf8) ?? ""
     }
 }
 
@@ -107,15 +108,8 @@ nonisolated enum Simctl {
     }
 
     static func unavailableDeviceUDIDs() async -> Set<String> {
-        struct Devices: Decodable {
-            struct Device: Decodable {
-                let udid: String
-                let isAvailable: Bool
-            }
-            let devices: [String: [Device]]
-        }
         guard let data = await run(["simctl", "list", "devices", "-j"]),
-              let decoded = try? JSONDecoder().decode(Devices.self, from: data)
+              let decoded = try? JSONDecoder().decode(SimctlDevices.self, from: data)
         else { return [] }
         return Set(decoded.devices.values.joined().filter { !$0.isAvailable }.map(\.udid))
     }
@@ -136,4 +130,13 @@ nonisolated enum Simctl {
         process.waitUntilExit()
         return process.terminationStatus == 0 ? data : nil
     }
+}
+
+nonisolated private struct SimctlDevice: Decodable {
+    let udid: String
+    let isAvailable: Bool
+}
+
+nonisolated private struct SimctlDevices: Decodable {
+    let devices: [String: [SimctlDevice]]
 }

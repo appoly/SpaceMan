@@ -1,7 +1,10 @@
 // Order matters only between patterns of equal depth: specific rules must precede the generic catch-alls at the end.
 nonisolated enum Catalogue {
-    static let rules: [Rule] = appleDevelopment + android + ai + developerTools + browsers + userFiles + macOS + generic
+    static let rules: [Rule] =
+        appleDevelopment + android + aiTools + developerTools + browsers + userFiles + macOS + generic
+}
 
+nonisolated extension Catalogue {
     private static let appleDevelopment: [Rule] = [
         Rule(.appleDevelopment, "Xcode", "/Applications/Xcode*.app", .appBundle),
         Rule(.appleDevelopment, "Xcode", "~/Applications/Xcode*.app", .appBundle),
@@ -10,25 +13,31 @@ nonisolated enum Catalogue {
              about: "Xcode .xip archives downloaded by the xcodes tool. Safe to delete once installed."),
         Rule(.appleDevelopment, "Xcode", "~/Library/Application Support/com.robotsandpencils.xcodes", "xcodes data"),
 
-        Rule(.appleDevelopment, "Simulator runtimes", "/System/Library/AssetsV2/com_apple_MobileAsset_*SimulatorRuntime/*.asset",
-             .simulatorRuntimeAsset,
-             about: "A downloaded simulator OS image. Manage in Xcode › Settings › Components, or with `xcrun simctl runtime`."),
+        Rule(.appleDevelopment, "Simulator runtimes",
+             "/System/Library/AssetsV2/com_apple_MobileAsset_*SimulatorRuntime/*.asset", .simulatorRuntimeAsset,
+             about: "A downloaded simulator OS image. Manage in Xcode › Settings › Components, or with `xcrun simctl " +
+                 "runtime`."),
         Rule(.appleDevelopment, "Simulator runtimes", "/Library/Developer/CoreSimulator/Cryptex/Images/bundle/*",
              .simulatorRuntimeBundle,
              about: "A simulator OS image installed from a disk image. Manage with `xcrun simctl runtime`."),
-        Rule(.appleDevelopment, "Simulator runtimes", "/Library/Developer/CoreSimulator/Images/*", .simulatorRuntimeBundle),
-        Rule(.appleDevelopment, "Simulator runtimes", "/Library/Developer/CoreSimulator/Profiles/Runtimes/*.simruntime", .folderName,
-             about: "An older-style simulator runtime bundle."),
+        Rule(.appleDevelopment, "Simulator runtimes", "/Library/Developer/CoreSimulator/Images/*",
+             .simulatorRuntimeBundle),
+        Rule(.appleDevelopment, "Simulator runtimes", "/Library/Developer/CoreSimulator/Profiles/Runtimes/*.simruntime",
+             .folderName, about: "An older-style simulator runtime bundle."),
         Rule(.appleDevelopment, nil, "/Library/Developer/CoreSimulator/Caches/dyld", "Simulator shared caches",
              children: .named(.dyldCache),
              about: "dyld shared caches built for each simulator runtime. Regenerated automatically when needed."),
-        Rule(.appleDevelopment, nil, "/Library/Developer/CoreSimulator", "Other simulator system data", children: .folderTree),
+        Rule(.appleDevelopment, nil, "/Library/Developer/CoreSimulator", "Other simulator system data",
+             children: .folderTree),
 
         Rule(.appleDevelopment, nil, "~/Library/Developer/CoreSimulator/Devices", "Simulator devices",
              children: .named(.simulatorDevice),
-             about: "Each simulated device's installed apps, data and settings. `xcrun simctl delete unavailable` removes devices whose runtime is gone."),
-        Rule(.appleDevelopment, nil, "~/Library/Developer/CoreSimulator/Caches", "Simulator caches", children: .folderTree),
-        Rule(.appleDevelopment, nil, "~/Library/Developer/CoreSimulator", "Other simulator data", children: .folderTree),
+             about: "Each simulated device's installed apps, data and settings. `xcrun simctl delete unavailable` " +
+                 "removes devices whose runtime is gone."),
+        Rule(.appleDevelopment, nil, "~/Library/Developer/CoreSimulator/Caches", "Simulator caches",
+             children: .folderTree),
+        Rule(.appleDevelopment, nil, "~/Library/Developer/CoreSimulator", "Other simulator data",
+             children: .folderTree),
         Rule(.appleDevelopment, nil, "~/Library/Developer/Xcode/UserData/Previews", "SwiftUI preview devices",
              about: "Simulator devices Xcode creates to render SwiftUI previews. Recreated on demand."),
         Rule(.appleDevelopment, nil, "~/Library/Developer/XCTestDevices", "Test clone devices",
@@ -37,7 +46,8 @@ nonisolated enum Catalogue {
 
         Rule(.appleDevelopment, nil, "~/Library/Developer/Xcode/*DeviceSupport", .deviceSupportFolder,
              children: .named(.deviceSupportVersion),
-             about: "Debug symbols copied from each physical device OS version you've run on. Old versions are safe to delete; Xcode copies them again if needed."),
+             about: "Debug symbols copied from each physical device OS version you've run on. Old versions are safe " +
+                 "to delete; Xcode copies them again if needed."),
 
         Rule(.appleDevelopment, nil, "~/Library/Developer/Xcode/DerivedData", "DerivedData",
              children: .named(.derivedData),
@@ -51,23 +61,28 @@ nonisolated enum Catalogue {
         Rule(.appleDevelopment, nil, "~/Library/Developer", "Other developer data", children: .folderTree),
         Rule(.appleDevelopment, nil, "/Library/Developer", "Other system developer data", children: .folderTree),
 
-        Rule(.appleDevelopment, "Xcode components", "/System/Library/AssetsV2/com_apple_MobileAsset_AppleDeveloperDocumentation",
-             "Developer documentation"),
-        Rule(.appleDevelopment, "Xcode components", "/System/Library/AssetsV2/com_apple_MobileAsset_MetalToolchain", "Metal toolchain"),
+        Rule(.appleDevelopment, "Xcode components",
+             "/System/Library/AssetsV2/com_apple_MobileAsset_AppleDeveloperDocumentation", "Developer documentation"),
+        Rule(.appleDevelopment, "Xcode components", "/System/Library/AssetsV2/com_apple_MobileAsset_MetalToolchain",
+             "Metal toolchain"),
         Rule(.appleDevelopment, "Xcode components", "/System/Library/AssetsV2/com_apple_MobileAsset_SourceEditorAssets",
              "Source editor assets"),
 
-        Rule(.appleDevelopment, "Swift packages", "~/Library/Caches/org.swift.swiftpm/repositories", "Package repository cache",
-             children: .named(.hashSuffixed),
-             about: "Git clones of package dependencies, shared by all projects. Safe to delete; re-fetched when needed."),
-        Rule(.appleDevelopment, "Swift packages", "~/Library/Caches/org.swift.swiftpm/artifacts", "Binary artifact cache",
-             children: .named(.swiftPMArtifact),
-             about: "Downloaded binary frameworks (XCFrameworks) used by packages. Safe to delete; re-downloaded when needed."),
-        Rule(.appleDevelopment, "Swift packages", "~/Library/Caches/org.swift.swiftpm", "Other SwiftPM caches", children: .folderTree),
+        Rule(.appleDevelopment, "Swift packages", "~/Library/Caches/org.swift.swiftpm/repositories",
+             "Package repository cache", children: .named(.hashSuffixed),
+             about: "Git clones of package dependencies, shared by all projects. Safe to delete; re-fetched when " +
+                 "needed."),
+        Rule(.appleDevelopment, "Swift packages", "~/Library/Caches/org.swift.swiftpm/artifacts",
+             "Binary artifact cache", children: .named(.swiftPMArtifact),
+             about: "Downloaded binary frameworks (XCFrameworks) used by packages. Safe to delete; re-downloaded " +
+                 "when needed."),
+        Rule(.appleDevelopment, "Swift packages", "~/Library/Caches/org.swift.swiftpm", "Other SwiftPM caches",
+             children: .folderTree),
         Rule(.appleDevelopment, "Swift packages", "~/Library/org.swift.swiftpm", "SwiftPM configuration"),
         Rule(.appleDevelopment, "Swift packages", "~/.swiftpm", "SwiftPM SDKs & configuration", children: .folderTree),
         Rule(.appleDevelopment, "CocoaPods", "~/.cocoapods/repos", "Spec repositories", children: .named(.folderName),
-             about: "Local clones of CocoaPods spec indexes. The trunk repo is only needed if a Podfile uses it as a git source."),
+             about: "Local clones of CocoaPods spec indexes. The trunk repo is only needed if a Podfile uses it as a " +
+                 "git source."),
         Rule(.appleDevelopment, "CocoaPods", "~/Library/Caches/CocoaPods", "Download cache",
              about: "Downloaded pods. `pod cache clean --all` clears it."),
         Rule(.appleDevelopment, "Other Xcode caches", "~/Library/Caches/org.carthage.CarthageKit", "Carthage cache"),
@@ -75,7 +90,8 @@ nonisolated enum Catalogue {
         Rule(.appleDevelopment, "Other Xcode caches", "~/Library/Caches/xcode-build-server", "xcode-build-server",
              about: "Index data for editing Xcode projects in other editors via sourcekit-lsp."),
         Rule(.appleDevelopment, "Other Xcode caches", "~/Library/Caches/SwiftLint", "SwiftLint cache"),
-        Rule(.appleDevelopment, "Other Xcode caches", "~/Library/Application Support/com.apple.dt.*", .bundleIdentifier),
+        Rule(.appleDevelopment, "Other Xcode caches", "~/Library/Application Support/com.apple.dt.*",
+             .bundleIdentifier)
     ]
 
     private static let android: [Rule] = [
@@ -90,21 +106,24 @@ nonisolated enum Catalogue {
         Rule(.androidDevelopment, "Gradle", "~/.gradle/wrapper", "Gradle distributions", children: .folderTree),
         Rule(.androidDevelopment, "Gradle", "~/.gradle", "Other Gradle data"),
         Rule(.androidDevelopment, nil, "~/Library/Caches/Google/AndroidStudio*", .folderName),
-        Rule(.androidDevelopment, nil, "~/Library/Application Support/Google/AndroidStudio*", .folderName),
+        Rule(.androidDevelopment, nil, "~/Library/Application Support/Google/AndroidStudio*", .folderName)
     ]
+}
 
-    private static let ai: [Rule] = [
+nonisolated extension Catalogue {
+    private static let aiTools: [Rule] = [
         Rule(.aiTools, "Claude", "/Applications/Claude.app", .appBundle),
         Rule(.aiTools, "Claude", "~/Library/Application Support/Claude/vm_bundles", "Claude desktop sandbox VM",
              about: "Linux virtual machine image Claude desktop uses to run code and tools on your Mac."),
         Rule(.aiTools, "Claude", "~/Library/Application Support/Claude", "Claude desktop data", children: .folderTree),
         Rule(.aiTools, "Claude", "~/Library/Application Support/Claude-3p", "Claude desktop data (third-party)"),
         Rule(.aiTools, "Claude", "~/Library/Caches/com.anthropic.*", .bundleIdentifier),
-        Rule(.aiTools, "Claude", "~/.claude/projects", "Claude Code session transcripts", children: .named(.folderName)),
+        Rule(.aiTools, "Claude", "~/.claude/projects", "Claude Code session transcripts",
+             children: .named(.folderName)),
         Rule(.aiTools, "Claude", "~/.claude/jobs", "Claude Code background job workspaces", children: .folderTree),
         Rule(.aiTools, "Claude", "~/.claude", "Other Claude Code data", children: .folderTree),
-        Rule(.aiTools, "Claude", "~/.local/share/claude/versions", "Claude Code installed versions", children: .named(.folderName),
-             about: "Each downloaded Claude Code release. Only the newest is in use."),
+        Rule(.aiTools, "Claude", "~/.local/share/claude/versions", "Claude Code installed versions",
+             children: .named(.folderName), about: "Each downloaded Claude Code release. Only the newest is in use."),
         Rule(.aiTools, "Claude", "~/.local/share/claude", "Other Claude Code files", children: .folderTree),
         Rule(.aiTools, "Claude", "~/.cache/claude", "Claude Code cache"),
         Rule(.aiTools, "Claude", "~/Library/Caches/claude-cli-nodejs", "Claude Code (npm) cache"),
@@ -145,12 +164,13 @@ nonisolated enum Catalogue {
         Rule(.aiTools, "LM Studio", "~/.lmstudio", "Other LM Studio data", children: .folderTree),
         Rule(.aiTools, "LM Studio", "~/.cache/lm-studio", "LM Studio cache", children: .folderTree),
 
-        Rule(.aiTools, "Hugging Face", "~/.cache/huggingface/hub", "Model & dataset cache", children: .named(.huggingFaceRepo),
+        Rule(.aiTools, "Hugging Face", "~/.cache/huggingface/hub", "Model & dataset cache",
+             children: .named(.huggingFaceRepo),
              about: "Models and datasets downloaded by Hugging Face libraries (transformers, MLX, diffusers…)."),
         Rule(.aiTools, "Hugging Face", "~/.cache/huggingface", "Other Hugging Face data"),
 
-        Rule(.aiTools, "Google Chrome", "~/Library/Application Support/Google/Chrome/OptGuideOnDeviceModel", "Gemini Nano",
-             about: "Chrome's built-in on-device language model."),
+        Rule(.aiTools, "Google Chrome", "~/Library/Application Support/Google/Chrome/OptGuideOnDeviceModel",
+             "Gemini Nano", about: "Chrome's built-in on-device language model."),
         Rule(.aiTools, "Google Chrome", "~/Library/Application Support/Google/Chrome/OptGuideOnDeviceClassifierModel",
              "On-device classifier model"),
 
@@ -167,24 +187,34 @@ nonisolated enum Catalogue {
         Rule(.aiTools, "Other AI coding tools", "~/.trae-aicc", "Trae AI data"),
         Rule(.aiTools, "Other AI coding tools", "~/Library/Application Support/Trae", "Trae app data"),
 
-        Rule(.aiTools, "Apple Intelligence & Siri", "/System/Library/AssetsV2/com_apple_MobileAsset_UAF_*", .mobileAsset,
-             about: "Models macOS downloads for Siri, Apple Intelligence, dictation and other on-device features. Managed by macOS."),
-        Rule(.aiTools, "Apple Intelligence & Siri", "/System/Library/AssetsV2/com_apple_MobileAsset_VoiceTrigger*", .mobileAsset),
-        Rule(.aiTools, "Apple Intelligence & Siri", "~/Library/Caches/com.apple.e5rt.e5bundlecache", "Compiled on-device model cache",
+        Rule(.aiTools, "Apple Intelligence & Siri", "/System/Library/AssetsV2/com_apple_MobileAsset_UAF_*",
+             .mobileAsset,
+             about: "Models macOS downloads for Siri, Apple Intelligence, dictation and other on-device features. " +
+                 "Managed by macOS."),
+        Rule(.aiTools, "Apple Intelligence & Siri", "/System/Library/AssetsV2/com_apple_MobileAsset_VoiceTrigger*",
+             .mobileAsset),
+        Rule(.aiTools, "Apple Intelligence & Siri", "~/Library/Caches/com.apple.e5rt.e5bundlecache",
+             "Compiled on-device model cache",
              about: "Apple's on-device ML runtime caches compiled models here. Rebuilt automatically."),
         Rule(.aiTools, "Apple Intelligence & Siri", "~/Library/Caches/com.apple.siri*", .bundleIdentifier),
         Rule(.aiTools, "Apple Intelligence & Siri", "~/Library/Caches/com.apple.speech.*", .bundleIdentifier),
-        Rule(.aiTools, "Apple Intelligence & Siri", "~/Library/Caches/SiriTTS", "Siri voices cache"),
+        Rule(.aiTools, "Apple Intelligence & Siri", "~/Library/Caches/SiriTTS", "Siri voices cache")
     ]
+}
 
+nonisolated extension Catalogue {
     private static let developerTools: [Rule] = [
         Rule(.developerTools, "Homebrew", "/opt/homebrew/Cellar", "Installed formulae", children: .named(.folderName)),
         Rule(.developerTools, "Homebrew", "/opt/homebrew/Caskroom", "Installed casks", children: .named(.folderName)),
-        Rule(.developerTools, "Homebrew", "/opt/homebrew/var/homebrew/tmp", "Temporary build files", children: .folderTree,
-             about: "Homebrew's scratch space while installing. Large contents usually mean an install or upgrade was interrupted."),
+        Rule(.developerTools, "Homebrew", "/opt/homebrew/var/homebrew/tmp", "Temporary build files",
+             children: .folderTree,
+             about: "Homebrew's scratch space while installing. Large contents usually mean an install or upgrade " +
+                 "was interrupted."),
         Rule(.developerTools, "Homebrew", "/opt/homebrew", "Other Homebrew files", children: .folderTree),
-        Rule(.developerTools, "Homebrew", "/usr/local/Cellar", "Installed formulae (Intel)", children: .named(.folderName)),
-        Rule(.developerTools, "Homebrew", "/usr/local/Caskroom", "Installed casks (Intel)", children: .named(.folderName)),
+        Rule(.developerTools, "Homebrew", "/usr/local/Cellar", "Installed formulae (Intel)",
+             children: .named(.folderName)),
+        Rule(.developerTools, "Homebrew", "/usr/local/Caskroom", "Installed casks (Intel)",
+             children: .named(.folderName)),
         Rule(.developerTools, "Homebrew", "/usr/local/Homebrew", "Homebrew (Intel)"),
         Rule(.developerTools, "Homebrew", "~/Library/Caches/Homebrew", "Download cache", children: .folderTree,
              about: "Downloaded bottles and casks. `brew cleanup --prune=all` clears it."),
@@ -225,24 +255,33 @@ nonisolated enum Catalogue {
 
         Rule(.developerTools, "Docker", "/Applications/Docker.app", .appBundle),
         Rule(.developerTools, "Docker", "~/Library/Containers/com.docker.docker", "Docker Desktop disk image",
-             about: "Docker Desktop's Linux VM disk, holding every image, container and volume. Reclaim with `docker system prune`."),
+             about: "Docker Desktop's Linux VM disk, holding every image, container and volume. Reclaim with `docker " +
+                 "system prune`."),
         Rule(.developerTools, "Docker", "~/Library/Application Support/Docker Desktop", "Docker Desktop data"),
         Rule(.developerTools, "Docker", "~/.docker", "Docker CLI data"),
 
         Rule(.developerTools, "Visual Studio Code", "/Applications/Visual Studio Code.app", .appBundle),
-        Rule(.developerTools, "Visual Studio Code", "~/.vscode/extensions", "Extensions", children: .named(.folderName)),
+        Rule(.developerTools, "Visual Studio Code", "~/.vscode/extensions", "Extensions",
+             children: .named(.folderName)),
         Rule(.developerTools, "Visual Studio Code", "~/.vscode", "Other VS Code data"),
-        Rule(.developerTools, "Visual Studio Code", "~/Library/Application Support/Code", "App data", children: .folderTree),
+        Rule(.developerTools, "Visual Studio Code", "~/Library/Application Support/Code", "App data",
+             children: .folderTree),
         Rule(.developerTools, "Visual Studio Code", "~/Library/Caches/com.microsoft.VSCode*", .bundleIdentifier),
-        Rule(.developerTools, "JetBrains", "~/Library/Caches/JetBrains", "JetBrains caches", children: .named(.folderName)),
-        Rule(.developerTools, "JetBrains", "~/Library/Application Support/JetBrains", "JetBrains data", children: .named(.folderName)),
+        Rule(.developerTools, "JetBrains", "~/Library/Caches/JetBrains", "JetBrains caches",
+             children: .named(.folderName)),
+        Rule(.developerTools, "JetBrains", "~/Library/Application Support/JetBrains", "JetBrains data",
+             children: .named(.folderName))
     ]
+}
 
+nonisolated extension Catalogue {
     private static let browsers: [Rule] = [
         Rule(.browsers, "Google Chrome", "/Applications/Google Chrome.app", .appBundle),
-        Rule(.browsers, "Google Chrome", "~/Library/Application Support/Google/Chrome", "Profiles & data", children: .folderTree),
+        Rule(.browsers, "Google Chrome", "~/Library/Application Support/Google/Chrome", "Profiles & data",
+             children: .folderTree),
         Rule(.browsers, "Google Chrome", "~/Library/Caches/Google/Chrome", "Cache"),
-        Rule(.browsers, "Google Chrome", "~/Library/Application Support/Google", "Other Google data", children: .folderTree),
+        Rule(.browsers, "Google Chrome", "~/Library/Application Support/Google", "Other Google data",
+             children: .folderTree),
         Rule(.browsers, "Google Chrome", "~/Library/Caches/Google", "Other Google caches"),
         Rule(.browsers, "Firefox", "/Applications/Firefox.app", .appBundle),
         Rule(.browsers, "Firefox", "~/Library/Application Support/Firefox", "Profiles & data", children: .folderTree),
@@ -255,16 +294,21 @@ nonisolated enum Catalogue {
         Rule(.browsers, "Arc", "~/Library/Application Support/Arc", "Profiles & data", children: .folderTree),
         Rule(.browsers, "Arc", "~/Library/Caches/Arc", "Cache"),
         Rule(.browsers, "Brave", "/Applications/Brave Browser.app", .appBundle),
-        Rule(.browsers, "Brave", "~/Library/Application Support/BraveSoftware", "Profiles & data", children: .folderTree),
+        Rule(.browsers, "Brave", "~/Library/Application Support/BraveSoftware", "Profiles & data",
+             children: .folderTree),
         Rule(.browsers, "Brave", "~/Library/Caches/BraveSoftware", "Cache"),
         Rule(.browsers, "Opera", "/Applications/Opera.app", .appBundle),
-        Rule(.browsers, "Opera", "~/Library/Application Support/com.operasoftware.Opera", "Profiles & data", children: .folderTree),
+        Rule(.browsers, "Opera", "~/Library/Application Support/com.operasoftware.Opera", "Profiles & data",
+             children: .folderTree),
         Rule(.browsers, "Opera", "~/Library/Caches/com.operasoftware.Opera", "Cache"),
         Rule(.browsers, "Microsoft Edge", "/Applications/Microsoft Edge.app", .appBundle),
-        Rule(.browsers, "Microsoft Edge", "~/Library/Application Support/Microsoft Edge", "Profiles & data", children: .folderTree),
-        Rule(.browsers, "Microsoft Edge", "~/Library/Caches/Microsoft Edge", "Cache"),
+        Rule(.browsers, "Microsoft Edge", "~/Library/Application Support/Microsoft Edge", "Profiles & data",
+             children: .folderTree),
+        Rule(.browsers, "Microsoft Edge", "~/Library/Caches/Microsoft Edge", "Cache")
     ]
+}
 
+nonisolated extension Catalogue {
     private static let userFiles: [Rule] = [
         Rule(.userFiles, nil, "~/Code", "Code", children: .folderTree),
         Rule(.userFiles, nil, "~/Projects", "Projects", children: .folderTree),
@@ -278,31 +322,37 @@ nonisolated enum Catalogue {
         Rule(.userFiles, nil, "~/Music", "Music", children: .folderTree),
         Rule(.userFiles, nil, "~/.Trash", "Trash", about: "Deleted files. Empty the Trash to reclaim this space."),
         Rule(.userFiles, nil, "~/Library/Mobile Documents", "iCloud Drive (downloaded)", children: .folderTree,
-             about: "Local copies of iCloud Drive files. Right-click › Remove Download in Finder frees space but keeps them in iCloud."),
+             about: "Local copies of iCloud Drive files. Right-click › Remove Download in Finder frees space but " +
+                 "keeps them in iCloud."),
         Rule(.userFiles, "Cloud storage", "~/Library/CloudStorage/*", .folderName, children: .folderTree),
         Rule(.userFiles, nil, "~/Library/Application Support/MobileSync/Backup", "iPhone & iPad backups",
-             children: .named(.deviceBackup),
-             about: "Local device backups. Manage from the device's page in Finder."),
-        Rule(.userFiles, nil, "~/Library/iTunes/*Software Updates", "Downloaded device software updates"),
+             children: .named(.deviceBackup), about: "Local device backups. Manage from the device's page in Finder."),
+        Rule(.userFiles, nil, "~/Library/iTunes/*Software Updates", "Downloaded device software updates")
     ]
 
     private static let macOS: [Rule] = [
-        Rule(.macOS, "System downloads", "/System/Library/AssetsV2/com_apple_MobileAsset_MacSoftwareUpdate", "Downloaded macOS updates",
-             about: "A macOS update downloaded ahead of installation."),
-        Rule(.macOS, "System downloads", "/System/Library/AssetsV2/*", .mobileAsset, about: "Assets macOS downloads on demand."),
+        Rule(.macOS, "System downloads", "/System/Library/AssetsV2/com_apple_MobileAsset_MacSoftwareUpdate",
+             "Downloaded macOS updates", about: "A macOS update downloaded ahead of installation."),
+        Rule(.macOS, "System downloads", "/System/Library/AssetsV2/*", .mobileAsset,
+             about: "Assets macOS downloads on demand."),
         Rule(.macOS, "System downloads", "/System/Library/AssetsV2", "Other system downloads"),
-        Rule(.macOS, "Wallpapers & screen savers", "~/Library/Application Support/com.apple.wallpaper/aerials", "Aerial wallpapers",
+        Rule(.macOS, "Wallpapers & screen savers", "~/Library/Application Support/com.apple.wallpaper/aerials",
+             "Aerial wallpapers",
              about: "Downloaded aerial videos. Remove unused ones in System Settings › Wallpaper."),
-        Rule(.macOS, "Wallpapers & screen savers", "/Library/Application Support/com.apple.idleassetsd", "Aerial screen savers"),
-        Rule(.macOS, "Wallpapers & screen savers", "/Library/Application Support/com.apple.TVIdleScreen", "Legacy aerial screen savers"),
-        Rule(.macOS, nil, "/private/var/vm", "Swap & sleep image", about: "Virtual memory swap files and the hibernation image."),
-        Rule(.macOS, "Logs", "/private/var/db/diagnostics", "System logs", about: "The unified log store. Pruned automatically by macOS."),
+        Rule(.macOS, "Wallpapers & screen savers", "/Library/Application Support/com.apple.idleassetsd",
+             "Aerial screen savers"),
+        Rule(.macOS, "Wallpapers & screen savers", "/Library/Application Support/com.apple.TVIdleScreen",
+             "Legacy aerial screen savers"),
+        Rule(.macOS, nil, "/private/var/vm", "Swap & sleep image",
+             about: "Virtual memory swap files and the hibernation image."),
+        Rule(.macOS, "Logs", "/private/var/db/diagnostics", "System logs",
+             about: "The unified log store. Pruned automatically by macOS."),
         Rule(.macOS, "Logs", "/private/var/db/uuidtext", "Log symbol tables"),
         Rule(.macOS, "Logs", "/private/var/log", "Legacy logs"),
         Rule(.macOS, "Logs", "~/Library/Logs", "Your logs", children: .named(.bundleIdentifier)),
         Rule(.macOS, "Logs", "/Library/Logs", "System-wide logs"),
         Rule(.macOS, nil, "/private/var/db", "System databases", children: .folderTree),
-        Rule(.macOS, nil, "/Library/Updates", "Staged updates"),
+        Rule(.macOS, nil, "/Library/Updates", "Staged updates")
     ]
 
     private static let generic: [Rule] = [
@@ -311,24 +361,29 @@ nonisolated enum Catalogue {
         Rule(.applications, nil, "~/Applications/*.app", .appBundle),
         Rule(.applications, nil, "/Applications", "Other applications", children: .folderTree),
 
-        Rule(.appData, "Application Support", "~/Library/Application Support/*", .bundleIdentifier, children: .folderTree),
+        Rule(.appData, "Application Support", "~/Library/Application Support/*", .bundleIdentifier,
+             children: .folderTree),
         Rule(.appData, "Sandboxed app containers", "~/Library/Containers/*", .appContainer, children: .folderTree),
-        Rule(.appData, "Shared app group containers", "~/Library/Group Containers/*", .groupContainer, children: .folderTree),
+        Rule(.appData, "Shared app group containers", "~/Library/Group Containers/*", .groupContainer,
+             children: .folderTree),
         Rule(.appData, nil, "~/Library/Mail", "Mail", about: "Downloaded mail and attachments."),
         Rule(.appData, nil, "~/Library/Messages", "Messages", about: "Message history and attachments."),
-        Rule(.appData, "System-wide application data", "/Library/Application Support/*", .bundleIdentifier, children: .folderTree),
+        Rule(.appData, "System-wide application data", "/Library/Application Support/*", .bundleIdentifier,
+             children: .folderTree),
 
         Rule(.caches, "Your caches", "~/Library/Caches/*", .bundleIdentifier, children: .folderTree,
              about: "Apps can rebuild caches, but only clear one while its app is quit."),
         Rule(.caches, "Your caches", "~/.cache/*", .folderName, children: .folderTree),
         Rule(.caches, "System-wide caches", "/Library/Caches/*", .bundleIdentifier),
-        Rule(.caches, "Temporary files", "/private/var/folders/*/*/C", "Per-user system caches", children: .named(.bundleIdentifier)),
+        Rule(.caches, "Temporary files", "/private/var/folders/*/*/C", "Per-user system caches",
+             children: .named(.bundleIdentifier)),
         Rule(.caches, "Temporary files", "/private/var/folders/*/*/T", "Temporary files", children: .folderTree,
              about: "Per-user temporary items. macOS clears them on restart."),
-        Rule(.caches, "Temporary files", "/private/var/folders/*/*/X", "Code-signing clones", children: .named(.bundleIdentifier),
+        Rule(.caches, "Temporary files", "/private/var/folders/*/*/X", "Code-signing clones",
+             children: .named(.bundleIdentifier),
              about: "Temporary copies apps keep of themselves, such as Chrome's code-sign clone."),
         Rule(.caches, "Temporary files", "/private/var/folders", "Other temporary data", children: .folderTree),
         Rule(.caches, "Temporary files", "/private/tmp", "Shared temporary folder (/tmp)", children: .folderTree,
-             about: "Cleared when macOS restarts."),
+             about: "Cleared when macOS restarts.")
     ]
 }

@@ -11,7 +11,7 @@ nonisolated struct DiskCapacity: Sendable {
 
     static func current() -> DiskCapacity? {
         let keys: Set<URLResourceKey> = [
-            .volumeTotalCapacityKey, .volumeAvailableCapacityKey, .volumeAvailableCapacityForImportantUsageKey,
+            .volumeTotalCapacityKey, .volumeAvailableCapacityKey, .volumeAvailableCapacityForImportantUsageKey
         ]
         guard let values = try? URL(filePath: "/").resourceValues(forKeys: keys),
               let total = values.volumeTotalCapacity,
@@ -48,11 +48,13 @@ nonisolated enum SpaceAnalyser {
         extras[.appleDevelopment] = unreadableRuntimes.map { ExtraItem(group: "Simulator runtimes", item: $0) }
 
         let deniedCount = stats.deniedPaths.withLock(\.count)
-        let hidden = hiddenSpace(scanned: root.size + unreadableRuntimes.reduce(0) { $0 + $1.size }, deniedCount: deniedCount)
+        let scannedSize = root.size + unreadableRuntimes.reduce(0) { $0 + $1.size }
+        let hidden = hiddenSpace(scanned: scannedSize, deniedCount: deniedCount)
         extras[.macOS] = systemVolumes() + [hidden].compactMap(\.self).map { ExtraItem(group: nil, item: $0) }
 
-        let categories = Classifier(root: root, rules: Catalogue.rules, context: namingContext, minimumSize: retainThreshold)
-            .classify(extras: extras)
+        let categories = Classifier(
+            root: root, rules: Catalogue.rules, context: namingContext, minimumSize: retainThreshold
+        ).classify(extras: extras)
         return ScanResult(
             categories: categories,
             capacity: DiskCapacity.current(),
@@ -62,9 +64,9 @@ nonisolated enum SpaceAnalyser {
     }
 
     static var hasFullDiskAccess: Bool {
-        let fd = open("/Library/Application Support/com.apple.TCC/TCC.db", O_RDONLY)
-        guard fd >= 0 else { return false }
-        close(fd)
+        let descriptor = open("/Library/Application Support/com.apple.TCC/TCC.db", O_RDONLY)
+        guard descriptor >= 0 else { return false }
+        close(descriptor)
         return true
     }
 
@@ -89,11 +91,26 @@ nonisolated enum SpaceAnalyser {
         }
     }
 
+    private struct SystemVolume {
+        let path: String
+        let title: String
+        let about: String
+    }
+
     private static func systemVolumes() -> [ExtraItem] {
-        let volumes: [(path: String, title: String, about: String)] = [
-            ("/", "macOS system volume", "The sealed, read-only macOS system. Its size is set by the macOS version."),
-            ("/System/Volumes/Preboot", "Preboot volume", "Boot support files and staged OS updates. Managed by macOS."),
-            ("/System/Volumes/VM", "Swap volume", "Virtual memory swap. Grows under memory pressure and shrinks after a restart."),
+        let volumes: [SystemVolume] = [
+            SystemVolume(
+                path: "/", title: "macOS system volume",
+                about: "The sealed, read-only macOS system. Its size is set by the macOS version."
+            ),
+            SystemVolume(
+                path: "/System/Volumes/Preboot", title: "Preboot volume",
+                about: "Boot support files and staged OS updates. Managed by macOS."
+            ),
+            SystemVolume(
+                path: "/System/Volumes/VM", title: "Swap volume",
+                about: "Virtual memory swap. Grows under memory pressure and shrinks after a restart."
+            )
         ]
         return volumes.compactMap { volume in
             guard let used = usedBytes(onVolumeAt: volume.path), used > 0 else { return nil }
@@ -109,13 +126,15 @@ nonisolated enum SpaceAnalyser {
         guard let dataUsed = usedBytes(onVolumeAt: dataVolume) else { return nil }
         let hidden = dataUsed - scanned
         guard hidden > 0 else { return nil }
+        let deniedFlag = "\(deniedCount) folders couldn't be read. Granting Full Disk Access reveals most of them."
         return StorageItem(
             id: "hidden",
             title: "Hidden from scan",
             size: hidden,
             category: .macOS,
-            about: "Space used on the data volume that no folder accounts for: APFS snapshots, purgeable data, and folders only macOS itself can read.",
-            flags: deniedCount > 0 ? ["\(deniedCount) folders couldn't be read. Granting Full Disk Access reveals most of them."] : []
+            about: "Space used on the data volume that no folder accounts for: APFS snapshots, purgeable data, " +
+                "and folders only macOS itself can read.",
+            flags: deniedCount > 0 ? [deniedFlag] : []
         )
     }
 
