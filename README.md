@@ -49,12 +49,17 @@ DerivedData, SwiftPM caches and several versioned Xcodes. A folder-size tool tel
 
 | Category | Examples |
 | --- | --- |
-| iOS & Apple development | Xcode installs, simulator runtimes and devices, device support, DerivedData, archives, SwiftPM and CocoaPods caches, CoreDevice data |
+| iOS & Apple development | Xcode installs, simulator runtimes and devices, device support, DerivedData, project `build`/`.build` folders, archives, SwiftPM and CocoaPods caches, CoreDevice data |
 | AI models & tools | Claude desktop and Claude Code, ChatGPT and Codex, OpenCode, Ollama, LM Studio, Hugging Face models, Chrome's Gemini Nano, Apple Intelligence and Siri assets |
-| Other developer tools | Homebrew, npm, pnpm, Yarn, Bun, pip, uv, conda, Rust, Go, Ruby, Docker, VS Code, JetBrains |
-| Android development | Android SDK, emulator images, Gradle caches |
+| Web development | npm, pnpm, Yarn, Bun, Deno, nvm, Composer, Herd, project `build` folders |
+| Other developer tools | Homebrew, pip, uv, conda, Rust, Go, Ruby, Docker, VS Code, JetBrains |
+| Android development | Android SDK, emulator images, Gradle caches, project `build` folders |
 | Web browsers | Chrome, Firefox, Safari, Arc, Brave, Opera, Edge |
 | Everything else | Applications, app containers, caches and temporary files, your files, iCloud Drive, device backups, Trash |
+
+Project `build` folders are found at any depth in `~/Code`, `~/Projects` and `~/Developer`, sorted by the project
+beside them, and only counted when git ignores them (so tracked folders, and ones inside ignored dependency folders
+like `.venv/` or `vendor/`, are left alone).
 
 Anything not in the catalogue still appears under **Other** as a folder hierarchy, so nothing large goes unseen.
 

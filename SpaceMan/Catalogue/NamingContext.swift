@@ -37,14 +37,28 @@ nonisolated final class NamingContext: Sendable {
     let simulatorRuntimes: [SimulatorRuntime]?
     let unavailableSimulatorUDIDs: Set<String>
     private let appNames = Mutex<[String: String?]>([:])
+    private let buildFolderDetector: BuildFolderDetector
+    private let buildProjects = Mutex<[String: BuildProject?]>([:])
 
     init(
-        home: String, osBuild: String, simulatorRuntimes: [SimulatorRuntime]?, unavailableSimulatorUDIDs: Set<String>
+        home: String, osBuild: String, simulatorRuntimes: [SimulatorRuntime]?, unavailableSimulatorUDIDs: Set<String>,
+        buildFolderDetector: BuildFolderDetector = BuildFolderDetector()
     ) {
         self.home = home
         self.osBuild = osBuild
         self.simulatorRuntimes = simulatorRuntimes
         self.unavailableSimulatorUDIDs = unavailableSimulatorUDIDs
+        self.buildFolderDetector = buildFolderDetector
+    }
+
+    /// Cached because each lookup runs git; `Classifier` warms it for all candidates in parallel.
+    func buildProject(at path: String) -> BuildProject? {
+        if let cached = buildProjects.withLock({ $0[path] }) {
+            return cached
+        }
+        let project = buildFolderDetector.project(forBuildFolderAt: path)
+        buildProjects.withLock { $0[path] = .some(project) }
+        return project
     }
 
     static func current() async -> NamingContext {

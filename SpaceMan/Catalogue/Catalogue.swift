@@ -2,6 +2,7 @@
 nonisolated enum Catalogue {
     static let rules: [Rule] =
         appleDevelopment + android + aiTools + developerTools + browsers + userFiles + macOS + generic
+        + projectBuildFolderRules
 }
 
 nonisolated extension Catalogue {
@@ -222,17 +223,17 @@ nonisolated extension Catalogue {
         Rule(.developerTools, "Homebrew", "~/Library/Caches/Homebrew", "Download cache", children: .folderTree,
              about: "Downloaded bottles and casks. `brew cleanup --prune=all` clears it."),
 
-        Rule(.developerTools, "JavaScript", "~/.npm", "npm cache", about: "`npm cache clean --force` clears it."),
-        Rule(.developerTools, "JavaScript", "~/.nvm/versions", "Node.js versions (nvm)", children: .folderTree),
-        Rule(.developerTools, "JavaScript", "~/.nvm", "Other nvm data"),
-        Rule(.developerTools, "JavaScript", "~/.volta", "Volta toolchains"),
-        Rule(.developerTools, "JavaScript", "~/.bun", "Bun"),
-        Rule(.developerTools, "JavaScript", "~/Library/pnpm", "pnpm store"),
-        Rule(.developerTools, "JavaScript", "~/Library/Caches/pnpm", "pnpm cache"),
-        Rule(.developerTools, "JavaScript", "~/Library/Caches/Yarn", "Yarn cache"),
-        Rule(.developerTools, "JavaScript", "~/Library/Caches/deno", "Deno cache"),
-        Rule(.developerTools, "JavaScript", "~/Library/Caches/typescript", "TypeScript cache"),
-        Rule(.developerTools, "JavaScript", "~/Library/Caches/node-gyp", "node-gyp headers"),
+        Rule(.webDevelopment, "JavaScript", "~/.npm", "npm cache", about: "`npm cache clean --force` clears it."),
+        Rule(.webDevelopment, "JavaScript", "~/.nvm/versions", "Node.js versions (nvm)", children: .folderTree),
+        Rule(.webDevelopment, "JavaScript", "~/.nvm", "Other nvm data"),
+        Rule(.webDevelopment, "JavaScript", "~/.volta", "Volta toolchains"),
+        Rule(.webDevelopment, "JavaScript", "~/.bun", "Bun"),
+        Rule(.webDevelopment, "JavaScript", "~/Library/pnpm", "pnpm store"),
+        Rule(.webDevelopment, "JavaScript", "~/Library/Caches/pnpm", "pnpm cache"),
+        Rule(.webDevelopment, "JavaScript", "~/Library/Caches/Yarn", "Yarn cache"),
+        Rule(.webDevelopment, "JavaScript", "~/Library/Caches/deno", "Deno cache"),
+        Rule(.webDevelopment, "JavaScript", "~/Library/Caches/typescript", "TypeScript cache"),
+        Rule(.webDevelopment, "JavaScript", "~/Library/Caches/node-gyp", "node-gyp headers"),
 
         Rule(.developerTools, "Python", "~/Library/Caches/pip", "pip cache", about: "`pip cache purge` clears it."),
         Rule(.developerTools, "Python", "~/Library/Caches/pipx", "pipx cache"),
@@ -250,9 +251,9 @@ nonisolated extension Catalogue {
         Rule(.developerTools, "Ruby", "~/.gem", "Ruby gems"),
         Rule(.developerTools, "Ruby", "~/.rbenv/versions", "Ruby versions (rbenv)", children: .named(.folderName)),
         Rule(.developerTools, "Java", "~/.m2", "Maven repository"),
-        Rule(.developerTools, "PHP", "~/.composer", "Composer"),
-        Rule(.developerTools, "PHP", "~/Library/Caches/composer", "Composer cache"),
-        Rule(.developerTools, "PHP", "~/Library/Application Support/Herd", "Herd"),
+        Rule(.webDevelopment, "PHP", "~/.composer", "Composer"),
+        Rule(.webDevelopment, "PHP", "~/Library/Caches/composer", "Composer cache"),
+        Rule(.webDevelopment, "PHP", "~/Library/Application Support/Herd", "Herd"),
         Rule(.developerTools, "Flutter", "~/Library/Caches/flutter_engine", "Flutter engine cache"),
         Rule(.developerTools, "Flutter", "~/fvm", "Flutter versions (fvm)"),
 

@@ -27,6 +27,8 @@ nonisolated enum Namer: Sendable {
     case dyldCache
     case huggingFaceRepo
     case deviceBackup
+    /// A project's `build` folder, named after the project; relies on `RuleCondition.buildFolder`.
+    case buildArtefacts
 
     func name(for path: String, context: NamingContext) -> ItemName {
         let folder = path.lastPathComponent
@@ -36,7 +38,7 @@ nonisolated enum Namer: Sendable {
         case .simulatorRuntimeAsset, .simulatorRuntimeBundle, .simulatorDevice, .deviceSupportFolder,
              .deviceSupportVersion, .derivedData, .xcarchive:
             return xcodeName(folder: folder, path: path, context: context)
-        case .swiftPMArtifact, .mobileAsset, .dyldCache, .huggingFaceRepo, .deviceBackup:
+        case .swiftPMArtifact, .mobileAsset, .dyldCache, .huggingFaceRepo, .deviceBackup, .buildArtefacts:
             return systemName(folder: folder, path: path, context: context)
         }
     }
@@ -63,7 +65,7 @@ nonisolated enum Namer: Sendable {
             return ItemName(title: folder.replacing(/-[0-9a-f]{8}$/, with: ""), subtitle: nil)
         case .simulatorRuntimeAsset, .simulatorRuntimeBundle, .simulatorDevice, .deviceSupportFolder,
              .deviceSupportVersion, .derivedData, .xcarchive, .swiftPMArtifact, .mobileAsset, .dyldCache,
-             .huggingFaceRepo, .deviceBackup:
+             .huggingFaceRepo, .deviceBackup, .buildArtefacts:
             preconditionFailure("name(for:context:) routes this case elsewhere")
         }
     }
@@ -86,7 +88,7 @@ nonisolated enum Namer: Sendable {
         case .xcarchive:
             return Self.archiveName(path: path)
         case .fixed, .folderName, .appBundle, .bundleIdentifier, .appContainer, .groupContainer, .hashSuffixed,
-             .swiftPMArtifact, .mobileAsset, .dyldCache, .huggingFaceRepo, .deviceBackup:
+             .swiftPMArtifact, .mobileAsset, .dyldCache, .huggingFaceRepo, .deviceBackup, .buildArtefacts:
             preconditionFailure("name(for:context:) routes this case elsewhere")
         }
     }
@@ -110,6 +112,8 @@ nonisolated enum Namer: Sendable {
             let device = info?["Device Name"] as? String ?? folder
             let date = (info?["Last Backup Date"] as? Date)?.formatted(date: .abbreviated, time: .omitted)
             return ItemName(title: device, subtitle: date.map { "Backed up \($0)" })
+        case .buildArtefacts:
+            return Self.buildArtefactsName(path: path, context: context)
         case .fixed, .folderName, .appBundle, .bundleIdentifier, .appContainer, .groupContainer, .hashSuffixed,
              .simulatorRuntimeAsset, .simulatorRuntimeBundle, .simulatorDevice, .deviceSupportFolder,
              .deviceSupportVersion, .derivedData, .xcarchive:
@@ -256,6 +260,9 @@ nonisolated enum Namer: Sendable {
         return ItemName(title: title)
     }
 
+}
+
+nonisolated extension Namer {
     // MARK: - System & AI
 
     private static let knownMobileAssets: [String: String] = [

@@ -3,6 +3,7 @@ import SwiftUI
 nonisolated enum StorageCategory: String, CaseIterable, Sendable {
     case appleDevelopment
     case androidDevelopment
+    case webDevelopment
     case aiTools
     case developerTools
     case applications
@@ -18,6 +19,7 @@ nonisolated enum StorageCategory: String, CaseIterable, Sendable {
         switch self {
         case .appleDevelopment: "iOS & Apple development"
         case .androidDevelopment: "Android development"
+        case .webDevelopment: "Web development"
         case .aiTools: "AI models & tools"
         case .developerTools: "Other developer tools"
         case .applications: "Applications"
@@ -35,6 +37,7 @@ nonisolated enum StorageCategory: String, CaseIterable, Sendable {
         switch self {
         case .appleDevelopment: "hammer"
         case .androidDevelopment: "smartphone"
+        case .webDevelopment: "chevron.left.forwardslash.chevron.right"
         case .aiTools: "sparkles"
         case .developerTools: "terminal"
         case .applications: "square.grid.2x2"
@@ -52,6 +55,7 @@ nonisolated enum StorageCategory: String, CaseIterable, Sendable {
         switch self {
         case .appleDevelopment: .blue
         case .androidDevelopment: .green
+        case .webDevelopment: .mint
         case .aiTools: .purple
         case .developerTools: .teal
         case .applications: .orange

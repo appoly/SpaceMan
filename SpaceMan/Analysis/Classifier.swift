@@ -1,4 +1,5 @@
 import Darwin
+import Dispatch
 
 /// An item that doesn't come from the scanned tree, such as another volume's usage.
 nonisolated struct ExtraItem: Sendable {
@@ -41,7 +42,7 @@ nonisolated struct Classifier {
 
         let matches = rules.enumerated()
             .flatMap { order, rule in
-                resolve(rule.pattern).map { Match(rule: rule, order: order, path: $0.path, node: $0.node) }
+                matches(for: rule).map { Match(rule: rule, order: order, path: $0.path, node: $0.node) }
             }
             .sorted { ($0.depth, -$0.order) > ($1.depth, -$1.order) }
 
@@ -76,18 +77,65 @@ nonisolated struct Classifier {
 
     // MARK: - Matching
 
+    private func matches(for rule: Rule) -> [(path: String, node: FSNode)] {
+        let candidates = resolve(rule.pattern)
+        var found = candidates
+        if let condition = rule.condition {
+            // Conditions can be slow (git), so evaluate every candidate concurrently before filtering.
+            DispatchQueue.concurrentPerform(iterations: candidates.count) { index in
+                _ = condition.isSatisfied(at: candidates[index].path, context: context)
+            }
+            found = candidates.filter { condition.isSatisfied(at: $0.path, context: context) }
+        }
+        return rule.pattern.contains("**") ? outermost(found) : found
+    }
+
+    private func outermost(_ found: [(path: String, node: FSNode)]) -> [(path: String, node: FSNode)] {
+        let paths = Set(found.map(\.path))
+        return found.filter { match in
+            var ancestor = match.path.deletingLastPathComponent
+            while ancestor.count > 1 {
+                if paths.contains(ancestor) {
+                    return false
+                }
+                ancestor = ancestor.deletingLastPathComponent
+            }
+            return true
+        }
+    }
+
     private func resolve(_ pattern: String) -> [(path: String, node: FSNode)] {
         let absolute = pattern.hasPrefix("~") ? context.home + pattern.dropFirst() : pattern
         var frontier = [(path: "/", node: root)]
         for component in absolute.split(separator: "/").map(String.init) {
-            let isWildcard = component.contains(where: { "*?[".contains($0) })
+            if component == "**" {
+                frontier = frontier.flatMap(selfAndDescendants)
+                continue
+            }
+            let alternatives = Self.alternatives(of: component)
             frontier = frontier.flatMap { parent in
                 parent.node.children
-                    .filter { isWildcard ? fnmatch(component, $0.name, 0) == 0 : $0.name == component }
+                    .filter { child in alternatives.contains { Self.matches(child.name, $0) } }
                     .map { (parent.path.appendingPathComponent($0.name), $0) }
             }
         }
         return frontier
+    }
+
+    private func selfAndDescendants(_ entry: (path: String, node: FSNode)) -> [(path: String, node: FSNode)] {
+        [entry] + entry.node.children.flatMap { child in
+            selfAndDescendants((entry.path.appendingPathComponent(child.name), child))
+        }
+    }
+
+    /// `{build,.build}` → `["build", ".build"]`; `fnmatch(3)` has no brace expansion.
+    private static func alternatives(of component: String) -> [String] {
+        guard component.hasPrefix("{"), component.hasSuffix("}") else { return [component] }
+        return component.dropFirst().dropLast().split(separator: ",").map(String.init)
+    }
+
+    private static func matches(_ name: String, _ pattern: String) -> Bool {
+        pattern.contains(where: { "*?[".contains($0) }) ? fnmatch(pattern, name, 0) == 0 : name == pattern
     }
 
     private func claimedSize(within node: FSNode, at path: String, claimed: Set<String>) -> Int64 {
