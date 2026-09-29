@@ -8,12 +8,13 @@ nonisolated enum CleanupEligibility: Sendable, Equatable {
     /// A catch-all whose folder also holds items listed elsewhere, so deleting it would delete those too.
     case partial
     case protected
+    case systemIntegrityProtected
     case noPermission
 
     var showsCheckbox: Bool {
         switch self {
         case .notAFolder: false
-        case .eligible, .partial, .protected, .noPermission: true
+        case .eligible, .partial, .protected, .systemIntegrityProtected, .noPermission: true
         }
     }
 
@@ -22,6 +23,9 @@ nonisolated enum CleanupEligibility: Sendable, Equatable {
         case .eligible, .notAFolder: nil
         case .partial: "This folder also contains items listed separately. Select those instead."
         case .protected: "SpaceMan won't delete this folder because macOS or your account relies on it."
+        case .systemIntegrityProtected:
+            "macOS locks this with System Integrity Protection, so SpaceMan can't delete it. If it's an Xcode " +
+                "component, remove it in Xcode › Settings › Components."
         case .noPermission: "You don't have permission to delete this."
         }
     }
@@ -32,22 +36,34 @@ nonisolated struct CleanupIndex: Sendable {
     let home: String
     let diskSizes: [String: Int64]
     let deletablePaths: Set<String>
+    var systemIntegrityProtectedPaths: Set<String> = []
 
     static func build(root: FSNode, home: String) -> CleanupIndex {
         var sizes: [String: Int64] = [:]
         var deletable = Set<String>()
+        var locked = Set<String>()
         func visit(_ node: FSNode, at path: String) {
             for child in node.children {
                 let childPath = path.appendingPathComponent(child.name)
                 sizes[childPath] = child.size
                 if canDelete(childPath, isDirectory: child.isDirectory) {
                     deletable.insert(childPath)
+                } else if isSystemIntegrityProtected(childPath) {
+                    locked.insert(childPath)
                 }
                 visit(child, at: childPath)
             }
         }
         visit(root, at: "/")
-        return CleanupIndex(home: home, diskSizes: sizes, deletablePaths: deletable)
+        return CleanupIndex(
+            home: home, diskSizes: sizes, deletablePaths: deletable, systemIntegrityProtectedPaths: locked
+        )
+    }
+
+    /// SIP marks what it guards with the `restricted` flag; even root can't remove those items.
+    static func isSystemIntegrityProtected(_ path: String) -> Bool {
+        var item = stat()
+        return lstat(path, &item) == 0 && item.st_flags & UInt32(SF_RESTRICTED) != 0
     }
 
     func eligibility(of item: StorageItem) -> CleanupEligibility {
@@ -61,7 +77,10 @@ nonisolated struct CleanupIndex: Sendable {
         if path != trashPath, isProtected(path) {
             return .protected
         }
-        return deletablePaths.contains(path) ? .eligible : .noPermission
+        if deletablePaths.contains(path) {
+            return .eligible
+        }
+        return systemIntegrityProtectedPaths.contains(path) ? .systemIntegrityProtected : .noPermission
     }
 
     /// Cleaning this up empties it rather than removing the folder itself.

@@ -174,8 +174,12 @@ nonisolated enum Namer: Sendable {
             if let runtime = context.runtime(containing: path) {
                 name.subtitle = runtime.lastUsed
             } else if !runtimes.isEmpty {
+                let lock = CleanupIndex.isSystemIntegrityProtected(path)
+                    ? " System Integrity Protection locks it, so it can only be deleted with SIP turned off."
+                    : ""
                 name.flags.append(
-                    "Not registered with CoreSimulator (`simctl runtime list`), so simulators can't use it"
+                    "Not registered with CoreSimulator (`simctl runtime list`), so simulators can't use it and " +
+                        "Xcode can't remove it." + lock
                 )
             }
         }
