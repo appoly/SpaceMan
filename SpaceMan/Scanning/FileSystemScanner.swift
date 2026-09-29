@@ -3,7 +3,7 @@ import Foundation
 import Synchronization
 
 nonisolated struct FSNode: Sendable {
-    let name: String
+    var name: String
     let isDirectory: Bool
     var size: Int64
     var children: [FSNode]

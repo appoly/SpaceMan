@@ -143,3 +143,34 @@ struct LocationTreeTests {
         #expect(folder.category == .appleDevelopment)
     }
 }
+
+struct TreeUpdateTests {
+    private func folder(_ name: String, _ size: Int64, _ children: [FSNode] = []) -> FSNode {
+        FSNode(name: name, isDirectory: true, size: size + children.reduce(0) { $0 + $1.size }, children: children)
+    }
+
+    @Test func removingANodeShrinksEveryAncestor() throws {
+        let derivedData = folder("DerivedData", 3, [folder("App", 40)])
+        let tree = folder("/", 1, [folder("Users", 2, [derivedData, folder("Keep", 9)])])
+
+        let updated = tree.replacing(at: "/Users/DerivedData/App", with: nil, retainThreshold: 1)
+
+        #expect(updated.size == tree.size - 40)
+        #expect(updated.node(at: "/Users")?.size == 14)
+        #expect(updated.node(at: "/Users/DerivedData")?.size == 3)
+        #expect(updated.node(at: "/Users/DerivedData/App") == nil)
+        #expect(updated.node(at: "/Users/Keep")?.size == 9)
+    }
+
+    @Test func replacingANodeAppliesTheDifferenceAndDropsItBelowTheThreshold() {
+        let tree = folder("/", 0, [folder("Trash", 10)])
+
+        let grown = tree.replacing(at: "/Trash", with: folder("Trash", 50), retainThreshold: 5)
+        #expect(grown.size == 50)
+        #expect(grown.node(at: "/Trash")?.size == 50)
+
+        let emptied = tree.replacing(at: "/Trash", with: folder("Trash", 1), retainThreshold: 5)
+        #expect(emptied.size == 1)
+        #expect(emptied.node(at: "/Trash") == nil)
+    }
+}

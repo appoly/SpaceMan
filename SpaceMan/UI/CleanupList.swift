@@ -9,7 +9,16 @@ struct CleanupEntry: Identifiable, Hashable {
     var id: String { path }
 }
 
-struct CleanupFailure: Identifiable {
+/// What a clean-up changed on disk, for updating the scan without repeating it.
+nonisolated struct CleanupOutcome: Sendable {
+    let failures: [CleanupFailure]
+    /// Items gone from where they were (deleted or moved to the Trash), excluding the Trash itself.
+    let removedPaths: [String]
+    /// Whether the Trash's contents changed: emptied, or given the moved items.
+    let trashChanged: Bool
+}
+
+nonisolated struct CleanupFailure: Identifiable, Sendable {
     let path: String
     let message: String
 
@@ -102,21 +111,27 @@ final class CleanupList {
         entries.removeAll { $0.path == path }
     }
 
-    /// Returns the entries that couldn't be removed; they stay listed.
-    func cleanUp(permanently: Bool) async -> [CleanupFailure] {
+    /// Entries that couldn't be removed stay listed.
+    func cleanUp(permanently: Bool) async -> CleanupOutcome {
         isCleaning = true
         defer { isCleaning = false }
         let trashPath = index?.trashPath
         // Captured first so items moved to the Trash below aren't then permanently deleted with it.
-        let trashContents = includesTrash ? trashPath.map(Self.contents(ofTrashAt:)) ?? [] : []
+        let emptiesTrash = includesTrash
+        let trashContents = emptiesTrash ? trashPath.map(Self.contents(ofTrashAt:)) ?? [] : []
         let paths = entries.map(\.path).filter { $0 != trashPath }
         var failures = permanently ? await delete(paths) : await moveToTrash(paths)
-        if let trashPath, includesTrash {
+        if let trashPath, emptiesTrash {
             failures += await emptyTrash(trashContents, at: trashPath)
         }
         let failedPaths = Set(failures.map(\.path))
+        let removedPaths = paths.filter { !failedPaths.contains($0) }
         entries.removeAll { !failedPaths.contains($0.path) }
-        return failures
+        return CleanupOutcome(
+            failures: failures,
+            removedPaths: removedPaths,
+            trashChanged: emptiesTrash || (!permanently && !removedPaths.isEmpty)
+        )
     }
 
     private static func contents(ofTrashAt trashPath: String) -> [String] {

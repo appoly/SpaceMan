@@ -25,14 +25,24 @@ nonisolated struct DiskCapacity: Sendable {
     }
 }
 
+/// What a scan found, kept so a clean-up can update the figures without scanning again.
+nonisolated struct ScanSnapshot: Sendable {
+    let root: FSNode
+    let context: NamingContext
+    let deniedPaths: [String]
+    let itemCount: Int
+}
+
 nonisolated struct ScanResult: Sendable {
+    let snapshot: ScanSnapshot
     let categories: [StorageItem]
     let locations: [StorageItem]
     let cleanupIndex: CleanupIndex
     let capacity: DiskCapacity?
-    let scannedItemCount: Int
-    let deniedFolderCount: Int
     let duration: Duration
+
+    var scannedItemCount: Int { snapshot.itemCount }
+    var deniedFolderCount: Int { snapshot.deniedPaths.count }
 }
 
 nonisolated enum SpaceAnalyser {
@@ -43,14 +53,41 @@ nonisolated enum SpaceAnalyser {
         let start = ContinuousClock.now
         async let context = NamingContext.current()
         async let tree = FileSystemScanner(retainThreshold: retainThreshold, stats: stats).scan(path: dataVolume)
-        let root = await tree
-        let namingContext = await context
+        let snapshot = await ScanSnapshot(
+            root: tree, context: context, deniedPaths: stats.deniedPaths.withLock(\.self).sorted(),
+            itemCount: stats.itemsScanned
+        )
+        return summarise(snapshot, duration: ContinuousClock.now - start)
+    }
 
+    /// Takes removed items out of the tree and rescans only the Trash, which moved items now occupy.
+    static func applying(_ outcome: CleanupOutcome, to result: ScanResult) async -> ScanResult {
+        let snapshot = result.snapshot
+        var root = snapshot.root
+        for path in outcome.removedPaths {
+            root = root.replacing(at: path, with: nil, retainThreshold: retainThreshold)
+        }
+        if outcome.trashChanged {
+            let trashPath = snapshot.context.home.appendingPathComponent(".Trash")
+            let scanner = FileSystemScanner(retainThreshold: retainThreshold, stats: ScanStats())
+            var trash = await scanner.scan(path: trashPath)
+            trash.name = trashPath.lastPathComponent
+            root = root.replacing(at: trashPath, with: trash, retainThreshold: retainThreshold)
+        }
+        let updated = ScanSnapshot(
+            root: root, context: snapshot.context, deniedPaths: snapshot.deniedPaths, itemCount: snapshot.itemCount
+        )
+        return summarise(updated, duration: result.duration)
+    }
+
+    private static func summarise(_ snapshot: ScanSnapshot, duration: Duration) -> ScanResult {
+        let root = snapshot.root
+        let namingContext = snapshot.context
         var extras: [StorageCategory: [ExtraItem]] = [:]
         let unreadableRuntimes = unreadableSimulatorRuntimes(in: root, context: namingContext)
         extras[.appleDevelopment] = unreadableRuntimes.map { ExtraItem(group: "Simulator runtimes", item: $0) }
 
-        let deniedPaths = stats.deniedPaths.withLock(\.self).sorted()
+        let deniedPaths = snapshot.deniedPaths
         let scannedSize = root.size + unreadableRuntimes.reduce(0) { $0 + $1.size }
         let hidden = hiddenSpace(scanned: scannedSize, deniedPaths: deniedPaths)
         extras[.macOS] = systemVolumes() + [hidden].compactMap(\.self).map { ExtraItem(group: nil, item: $0) }
@@ -59,13 +96,12 @@ nonisolated enum SpaceAnalyser {
             root: root, rules: Catalogue.rules, context: namingContext, minimumSize: retainThreshold
         ).classify(extras: extras)
         return ScanResult(
+            snapshot: snapshot,
             categories: categories,
             locations: LocationTree.items(root: root, categories: categories, minimumSize: retainThreshold),
             cleanupIndex: CleanupIndex.build(root: root, home: namingContext.home),
             capacity: DiskCapacity.current(),
-            scannedItemCount: stats.itemsScanned,
-            deniedFolderCount: deniedPaths.count,
-            duration: ContinuousClock.now - start
+            duration: duration
         )
     }
 
@@ -170,5 +206,33 @@ extension FSNode {
         path.split(separator: "/").reduce(Optional(self)) { node, component in
             node?.children.first { $0.name == component }
         }
+    }
+
+    /// Swaps the node at `path` for `replacement` (or removes it), adjusting every ancestor's size to match.
+    nonisolated func replacing(at path: String, with replacement: FSNode?, retainThreshold: Int64) -> FSNode {
+        replacing(path.split(separator: "/").map(String.init)[...], with: replacement, retainThreshold: retainThreshold)
+    }
+
+    nonisolated private func replacing(
+        _ components: ArraySlice<String>, with replacement: FSNode?, retainThreshold: Int64
+    ) -> FSNode {
+        guard let name = components.first else { return self }
+        var node = self
+        guard components.count > 1 else {
+            let previous = children.first { $0.name == name }
+            node.children.removeAll { $0.name == name }
+            node.size += (replacement?.size ?? 0) - (previous?.size ?? 0)
+            if let replacement, replacement.size >= retainThreshold {
+                node.children.append(replacement)
+            }
+            return node
+        }
+        guard let index = children.firstIndex(where: { $0.name == name }) else { return self }
+        let updated = children[index].replacing(
+            components.dropFirst(), with: replacement, retainThreshold: retainThreshold
+        )
+        node.size += updated.size - children[index].size
+        node.children[index] = updated
+        return node
     }
 }

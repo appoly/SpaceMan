@@ -43,6 +43,9 @@ struct ContentView: View {
                     Button("Inspector", systemImage: "sidebar.right") { showsInspector.toggle() }
                 }
             }
+            .sheet(isPresented: .constant(model.isCleaningUp)) {
+                CleaningUpView()
+            }
             .task {
                 if case .idle = model.phase {
                     model.scan()
@@ -78,6 +81,22 @@ struct ContentView: View {
                 )
             }
         }
+    }
+}
+
+/// Shown modally so nothing, including the Clean Up list, can change while items are being removed.
+private struct CleaningUpView: View {
+    var body: some View {
+        VStack(spacing: 12) {
+            ProgressView()
+            Text("Cleaning up…").font(.headline)
+            Text("Finder may ask for your password to move some items.")
+                .font(.callout)
+                .foregroundStyle(.secondary)
+        }
+        .padding(24)
+        .frame(minWidth: 300)
+        .interactiveDismissDisabled()
     }
 }
 

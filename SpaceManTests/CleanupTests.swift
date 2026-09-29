@@ -73,9 +73,11 @@ struct CleanupIndexTests {
         list.update(index: CleanupIndex(home: "/Users/test", diskSizes: [path: 10], deletablePaths: [path]))
         list.add(entry(path, size: 10))
 
-        let failures = await list.cleanUp(permanently: true)
+        let outcome = await list.cleanUp(permanently: true)
 
-        #expect(failures.isEmpty)
+        #expect(outcome.failures.isEmpty)
+        #expect(outcome.removedPaths == [path])
+        #expect(!outcome.trashChanged)
         #expect(list.entries.isEmpty)
         #expect(!FileManager.default.fileExists(atPath: path))
     }
@@ -91,9 +93,11 @@ struct CleanupIndexTests {
         list.add(entry(trash.path, size: 10))
         #expect(list.includesTrash)
 
-        let failures = await list.cleanUp(permanently: false)
+        let outcome = await list.cleanUp(permanently: false)
 
-        #expect(failures.isEmpty)
+        #expect(outcome.failures.isEmpty)
+        #expect(outcome.removedPaths.isEmpty)
+        #expect(outcome.trashChanged)
         #expect(FileManager.default.fileExists(atPath: trash.path))
         #expect(try FileManager.default.contentsOfDirectory(atPath: trash.path).isEmpty)
     }
@@ -118,9 +122,11 @@ struct CleanupIndexTests {
         list.add(entry(other.path, size: 10))
         #expect(list.entries.count == 2)
 
-        let failures = await list.cleanUp(permanently: false)
+        let outcome = await list.cleanUp(permanently: false)
 
-        #expect(failures.isEmpty)
+        #expect(outcome.failures.isEmpty)
+        #expect(outcome.removedPaths == [other.path])
+        #expect(outcome.trashChanged)
         #expect(FileManager.default.fileExists(atPath: trash.appending(path: "other").path))
         #expect(!FileManager.default.fileExists(atPath: trash.appending(path: "already trashed").path))
     }
