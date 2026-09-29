@@ -13,7 +13,7 @@ struct UsageBar: View {
                     .foregroundStyle(.secondary)
                 Spacer()
                 Text("\(capacity.availableIncludingPurgeable.formatted(.byteCount(style: .file))) available")
-                    .foregroundStyle(.secondary)
+                    .font(.title2.bold())
             }
 
             GeometryReader { proxy in
