@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 struct ContentView: View {
@@ -37,7 +38,7 @@ struct ContentView: View {
                     Button(model.result == nil ? "Scan" : "Rescan", systemImage: "arrow.clockwise") {
                         model.scan()
                     }
-                    .disabled(model.isScanning)
+                    .disabled(model.isScanning || !model.hasFullDiskAccess)
                 }
                 ToolbarItem(placement: .primaryAction) {
                     Button("Inspector", systemImage: "sidebar.right") { showsInspector.toggle() }
@@ -46,10 +47,9 @@ struct ContentView: View {
             .sheet(isPresented: .constant(model.isCleaningUp)) {
                 CleaningUpView()
             }
-            .task {
-                if case .idle = model.phase {
-                    model.scan()
-                }
+            .task { model.scanIfReady() }
+            .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+                model.scanIfReady()
             }
     }
 
@@ -57,7 +57,11 @@ struct ContentView: View {
     private var content: some View {
         switch model.phase {
         case .idle:
-            ContentUnavailableView("Ready to Scan", systemImage: "internaldrive")
+            if model.hasFullDiskAccess {
+                ContentUnavailableView("Ready to Scan", systemImage: "internaldrive")
+            } else {
+                FullDiskAccessSetupView()
+            }
         case let .scanning(progress):
             ScanProgressView(progress: progress)
         case let .finished(result):

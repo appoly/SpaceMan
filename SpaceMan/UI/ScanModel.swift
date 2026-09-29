@@ -50,6 +50,14 @@ final class ScanModel {
         return true
     }
 
+    /// Scans on first launch, or once Full Disk Access turns up, but never without it: the scan would prompt for
+    /// each protected folder and still miss data.
+    func scanIfReady() {
+        hasFullDiskAccess = SpaceAnalyser.hasFullDiskAccess
+        guard hasFullDiskAccess, case .idle = phase else { return }
+        scan()
+    }
+
     func scan() {
         scanTask?.cancel()
         hasFullDiskAccess = SpaceAnalyser.hasFullDiskAccess

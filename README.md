@@ -68,8 +68,9 @@ Anything not in the catalogue still appears under **Other** as a folder hierarch
 Requires macOS 26 or later.
 
 1. Open `SpaceMan.xcodeproj` in Xcode and run the **SpaceMan** scheme.
-2. Grant **Full Disk Access** when the banner asks (System Settings › Privacy & Security › Full Disk Access),
-   then rescan. Without it, folders such as Mail, Messages and other apps' containers can't be measured.
+2. Grant **Full Disk Access** when SpaceMan asks on first launch (System Settings › Privacy & Security › Full Disk
+   Access). It waits for access rather than scanning without it, since folders such as Mail, Messages and other
+   apps' containers can't be measured otherwise.
 3. Optionally grant **App Management** to delete other apps immediately rather than moving them to the Trash.
 
 > [!NOTE]
