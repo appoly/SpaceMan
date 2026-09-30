@@ -178,19 +178,38 @@ private struct CleanupCheckbox: View {
         let eligibility = cleanup.eligibility(of: item)
         if eligibility.showsCheckbox, let path = item.path {
             let inclusion = cleanup.inclusion(of: path)
-            Toggle("Include in Clean Up", isOn: Binding {
-                switch inclusion {
-                case .included, .includedViaAncestor: true
-                case .excluded: false
-                }
-            } set: { _ in
-                cleanup.toggle(item)
-            })
-            .toggleStyle(.checkbox)
-            .labelsHidden()
-            .disabled(!isToggleable(eligibility, inclusion))
-            .help(helpText(eligibility, inclusion))
+            if isBlocked(eligibility, inclusion) {
+                Image(systemName: "nosign")
+                    .fontWeight(.bold)
+                    .foregroundStyle(.secondary)
+                    .help(helpText(eligibility, inclusion))
+            } else {
+                toggle(eligibility, inclusion)
+            }
         }
+    }
+
+    /// A disabled tick box looks too much like an empty one, so items that can't be added say so outright.
+    private func isBlocked(_ eligibility: CleanupEligibility, _ inclusion: CleanupList.Inclusion) -> Bool {
+        switch inclusion {
+        case .included, .includedViaAncestor: false
+        case .excluded: eligibility != .eligible
+        }
+    }
+
+    private func toggle(_ eligibility: CleanupEligibility, _ inclusion: CleanupList.Inclusion) -> some View {
+        Toggle("Include in Clean Up", isOn: Binding {
+            switch inclusion {
+            case .included, .includedViaAncestor: true
+            case .excluded: false
+            }
+        } set: { _ in
+            cleanup.toggle(item)
+        })
+        .toggleStyle(.checkbox)
+        .labelsHidden()
+        .disabled(!isToggleable(eligibility, inclusion))
+        .help(helpText(eligibility, inclusion))
     }
 
     private func isToggleable(_ eligibility: CleanupEligibility, _ inclusion: CleanupList.Inclusion) -> Bool {
