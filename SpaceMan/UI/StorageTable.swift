@@ -27,24 +27,41 @@ struct StorageTable: View {
     @Binding var selection: StorageItem.ID?
     @State private var expanded: Set<StorageItem.ID> = []
     @State private var sortOrder = [StorageSort.largestFirst]
+    @SceneStorage("categoryColumns") private var categoryColumns = TableColumnCustomization<StorageItem>()
+    @SceneStorage("folderColumns") private var folderColumns = TableColumnCustomization<StorageItem>()
     @FocusState private var isFocused: Bool
     /// Passed explicitly: cells created as rows expand don't reliably inherit the SwiftUI environment.
     let cleanup: CleanupList
 
     var body: some View {
-        Table(of: StorageItem.self, selection: $selection, sortOrder: $sortOrder) {
+        Table(
+            of: StorageItem.self, selection: $selection, sortOrder: $sortOrder, columnCustomization: columnCustomization
+        ) {
             TableColumn("Name", sortUsing: StorageSort(column: .name, order: .forward)) { item in
                 NameCell(item: item, mode: mode, cleanup: cleanup)
             }
             .width(min: 180, ideal: 420)
+            .customizationID("name")
+            .disabledCustomizationBehavior([.visibility, .reorder])
 
-            TableColumn(
-                mode == .categories ? "Location" : "Identified as",
-                sortUsing: StorageSort(column: mode == .categories ? .location : .identifiedAs, order: .forward)
-            ) { item in
-                SecondaryCell(item: item, mode: mode)
+            if mode == .folders {
+                TableColumn("Identified as", sortUsing: StorageSort(column: .identifiedAs, order: .forward)) { item in
+                    Text(item.identifiedAs ?? "")
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+                .width(min: 100, ideal: 280)
+                .customizationID("identifiedAs")
+                .disabledCustomizationBehavior(.reorder)
+            }
+
+            TableColumn("Location", sortUsing: StorageSort(column: .location, order: .forward)) { item in
+                LocationCell(item: item)
             }
             .width(min: 100, ideal: 280)
+            .customizationID("location")
+            .defaultVisibility(mode == .folders ? .hidden : .visible)
+            .disabledCustomizationBehavior(mode == .folders ? .reorder : [.visibility, .reorder])
 
             TableColumn("Size", sortUsing: StorageSort.largestFirst) { item in
                 SizeCell(
@@ -55,6 +72,8 @@ struct StorageTable: View {
                 )
             }
             .width(120)
+            .customizationID("size")
+            .disabledCustomizationBehavior([.visibility, .reorder])
         } rows: {
             StorageRows(items: items, sort: sortOrder.first ?? .largestFirst, expanded: $expanded)
         }
@@ -105,6 +124,14 @@ struct StorageTable: View {
         if item.children != nil {
             Button("Select All for Clean Up") { cleanup.addAll(in: item) }
                 .disabled(cleanup.addableItems(in: item).isEmpty)
+        }
+    }
+
+    /// The folder view can swap "Identified as" for "Location" from the column headings' menu.
+    private var columnCustomization: Binding<TableColumnCustomization<StorageItem>> {
+        switch mode {
+        case .categories: $categoryColumns
+        case .folders: $folderColumns
         }
     }
 
@@ -183,23 +210,15 @@ private struct CleanupCheckbox: View {
     }
 }
 
-private struct SecondaryCell: View {
+private struct LocationCell: View {
     let item: StorageItem
-    let mode: StorageViewMode
 
     var body: some View {
-        switch mode {
-        case .categories:
-            Text(item.locationText ?? "")
-                .foregroundStyle(.secondary)
-                .truncationMode(.middle)
-                .lineLimit(1)
-                .help(item.path ?? "")
-        case .folders:
-            Text(item.identifiedAs ?? "")
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
-        }
+        Text(item.locationText ?? "")
+            .foregroundStyle(.secondary)
+            .truncationMode(.middle)
+            .lineLimit(1)
+            .help(item.path ?? "")
     }
 }
 
