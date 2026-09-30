@@ -70,7 +70,9 @@ Requires macOS 26 or later.
 1. Open `SpaceMan.xcodeproj` in Xcode and run the **SpaceMan** scheme.
 2. Grant **Full Disk Access** when SpaceMan asks on first launch (System Settings › Privacy & Security › Full Disk
    Access). It waits for access rather than scanning without it, since folders such as Mail, Messages and other
-   apps' containers can't be measured otherwise.
+   apps' containers can't be measured otherwise. **Scan Without Permissions** scans anyway, skipping the folders
+   macOS would ask about (Documents, Desktop, Downloads, iCloud Drive, cloud storage and other apps' containers)
+   and listing them as unreadable.
 3. Optionally grant **App Management** to delete other apps immediately rather than moving them to the Trash.
 
 > [!NOTE]

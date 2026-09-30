@@ -37,7 +37,7 @@ struct ContentView: View {
                     Button(model.result == nil ? "Scan" : "Rescan", systemImage: "arrow.clockwise") {
                         model.scan()
                     }
-                    .disabled(model.isScanning || !model.hasFullDiskAccess)
+                    .disabled(model.isScanning || (!model.hasFullDiskAccess && model.result == nil))
                 }
                 ToolbarItem(placement: .primaryAction) {
                     Button("Inspector", systemImage: "sidebar.right") {
@@ -65,7 +65,7 @@ struct ContentView: View {
             if model.hasFullDiskAccess {
                 ContentUnavailableView("Ready to Scan", systemImage: "internaldrive")
             } else {
-                FullDiskAccessSetupView()
+                FullDiskAccessSetupView(scanWithoutAccess: model.scan)
             }
         case let .scanning(progress):
             ScanProgressView(progress: progress)

@@ -34,15 +34,20 @@ nonisolated struct DirectoryListing: Sendable {
 nonisolated struct FileSystemScanner: Sendable {
     let retainThreshold: Int64
     let stats: ScanStats
+    /// Reported as unreadable without being opened.
+    let skippedPaths: Set<String>
     private let threadCount: Int
 
     /// APFS serialises much of the metadata work in the kernel, so beyond ~¾ of the cores extra threads only add
     /// lock contention: on 8 cores, 6 threads scan as fast as 64 with 20% less CPU.
     static let defaultThreadCount = max(2, ProcessInfo.processInfo.activeProcessorCount * 3 / 4)
 
-    init(retainThreshold: Int64, stats: ScanStats, threadCount: Int = defaultThreadCount) {
+    init(
+        retainThreshold: Int64, stats: ScanStats, skippedPaths: Set<String> = [], threadCount: Int = defaultThreadCount
+    ) {
         self.retainThreshold = retainThreshold
         self.stats = stats
+        self.skippedPaths = skippedPaths
         self.threadCount = threadCount
     }
 
@@ -55,6 +60,10 @@ nonisolated struct FileSystemScanner: Sendable {
     private static let bufferSize = 256 * 1024
 
     private func list(_ path: String) -> DirectoryListing? {
+        guard !skippedPaths.contains(path) else {
+            stats.deniedPaths.withLock { $0.append(path) }
+            return nil
+        }
         let descriptor = open(path, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC)
         guard descriptor >= 0 else {
             if errno == EACCES || errno == EPERM {

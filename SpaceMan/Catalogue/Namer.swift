@@ -84,7 +84,7 @@ nonisolated enum Namer: Sendable {
         case .deviceSupportVersion:
             return Self.deviceSupportVersionName(folder)
         case .derivedData:
-            return Self.derivedDataName(path: path)
+            return Self.derivedDataName(path: path, context: context)
         case .xcarchive:
             return Self.archiveName(path: path)
         case .fixed, .folderName, .appBundle, .bundleIdentifier, .appContainer, .groupContainer, .hashSuffixed,
@@ -220,7 +220,7 @@ nonisolated enum Namer: Sendable {
         "CompilationCache.noindex": "Compilation cache"
     ]
 
-    private static func derivedDataName(path: String) -> ItemName {
+    private static func derivedDataName(path: String, context: NamingContext) -> ItemName {
         let folder = path.lastPathComponent
         let info = NSDictionary(contentsOfFile: path.appendingPathComponent("info.plist"))
         guard let workspace = info?["WorkspacePath"] as? String else {
@@ -231,7 +231,7 @@ nonisolated enum Namer: Sendable {
             title: (workspace.lastPathComponent as NSString).deletingPathExtension,
             subtitle: workspace.abbreviatingWithTilde
         )
-        if !FileManager.default.fileExists(atPath: workspace) {
+        if !context.isInSkippedFolder(workspace), !FileManager.default.fileExists(atPath: workspace) {
             name.flags.append("Project no longer exists at this location")
         }
         return name

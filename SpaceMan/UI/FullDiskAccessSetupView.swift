@@ -1,9 +1,9 @@
 import AppKit
 import SwiftUI
 
-/// Shown instead of scanning when Full Disk Access is missing: without it the scan would trigger a prompt for each
-/// protected folder and still miss data.
+/// Shown instead of scanning when Full Disk Access is missing, as the scan would otherwise miss data.
 struct FullDiskAccessSetupView: View {
+    let scanWithoutAccess: () -> Void
     @Environment(\.openURL) private var openURL
 
     var body: some View {
@@ -27,9 +27,20 @@ struct FullDiskAccessSetupView: View {
                 Label("Choose **Quit & Reopen** when asked. The scan starts straight away.", systemImage: "3.circle")
             }
 
-            Button("Open Settings") { openURL(PrivacySettings.fullDiskAccess.url) }
-                .buttonStyle(.borderedProminent)
+            VStack(spacing: 10) {
+                HStack {
+                    Button("Scan Without Permissions", action: scanWithoutAccess)
+                    Button("Open Settings") { openURL(PrivacySettings.fullDiskAccess.url) }
+                        .buttonStyle(.borderedProminent)
+                }
                 .controlSize(.large)
+                Text("Scanning without permissions skips folders macOS would ask about, such as Documents, " +
+                     "Desktop and other apps' data, and lists them as unreadable.")
+                    .font(.callout)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: 460)
+            }
         }
         .padding(40)
         .frame(maxWidth: .infinity, maxHeight: .infinity)

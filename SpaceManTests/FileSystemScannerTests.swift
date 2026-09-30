@@ -1,4 +1,5 @@
 import Foundation
+import Synchronization
 import Testing
 @testable import SpaceMan
 
@@ -31,6 +32,15 @@ struct FileSystemScannerTests {
         let node = await scan()
         let expected = try allocatedSize("big/nested/blob") + allocatedSize("small/tiny")
         #expect(node.size == expected)
+    }
+
+    @Test func skippedFoldersAreReportedUnreadableWithoutBeingCounted() async throws {
+        let stats = ScanStats()
+        let skipped = root.appending(path: "big").path
+        let node = await FileSystemScanner(retainThreshold: 1_000_000, stats: stats, skippedPaths: [skipped])
+            .scan(path: root.path)
+        #expect(node.size == (try allocatedSize("small/tiny")))
+        #expect(stats.deniedPaths.withLock(\.self) == [skipped])
     }
 
     @Test func retainsOnlyEntriesAboveThreshold() async throws {

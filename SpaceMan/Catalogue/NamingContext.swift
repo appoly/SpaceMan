@@ -36,18 +36,21 @@ nonisolated final class NamingContext: Sendable {
     let osBuild: String
     let simulatorRuntimes: [SimulatorRuntime]?
     let unavailableSimulatorUDIDs: Set<String>
+    /// Folders the scan left alone, which mustn't be touched here either or macOS would ask about them.
+    let skippedFolders: [String]
     private let appNames = Mutex<[String: String?]>([:])
     private let buildFolderDetector: BuildFolderDetector
     private let buildProjects = Mutex<[String: BuildProject?]>([:])
 
     init(
         home: String, osBuild: String, simulatorRuntimes: [SimulatorRuntime]?, unavailableSimulatorUDIDs: Set<String>,
-        buildFolderDetector: BuildFolderDetector = BuildFolderDetector()
+        skippedFolders: [String] = [], buildFolderDetector: BuildFolderDetector = BuildFolderDetector()
     ) {
         self.home = home
         self.osBuild = osBuild
         self.simulatorRuntimes = simulatorRuntimes
         self.unavailableSimulatorUDIDs = unavailableSimulatorUDIDs
+        self.skippedFolders = skippedFolders
         self.buildFolderDetector = buildFolderDetector
     }
 
@@ -61,15 +64,20 @@ nonisolated final class NamingContext: Sendable {
         return project
     }
 
-    static func current() async -> NamingContext {
+    static func current(skippedFolders: [String]) async -> NamingContext {
         async let runtimes = Simctl.runtimes()
         async let unavailable = Simctl.unavailableDeviceUDIDs()
         return await NamingContext(
             home: NSHomeDirectory(),
             osBuild: Self.currentOSBuild(),
             simulatorRuntimes: runtimes,
-            unavailableSimulatorUDIDs: unavailable
+            unavailableSimulatorUDIDs: unavailable,
+            skippedFolders: skippedFolders
         )
+    }
+
+    func isInSkippedFolder(_ path: String) -> Bool {
+        skippedFolders.contains { path == $0 || path.hasPrefix($0 + "/") }
     }
 
     func runtime(containing path: String) -> SimulatorRuntime? {

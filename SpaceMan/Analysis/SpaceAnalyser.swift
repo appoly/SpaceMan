@@ -49,10 +49,13 @@ nonisolated enum SpaceAnalyser {
     static let dataVolume = "/System/Volumes/Data"
     private static let retainThreshold: Int64 = 20_000_000
 
-    static func analyse(stats: ScanStats) async -> ScanResult {
+    static func analyse(stats: ScanStats, skipsPromptingFolders: Bool) async -> ScanResult {
         let start = ContinuousClock.now
-        async let context = NamingContext.current()
-        async let tree = FileSystemScanner(retainThreshold: retainThreshold, stats: stats).scan(path: dataVolume)
+        let skipped = skipsPromptingFolders ? promptingFolders(home: NSHomeDirectory()) : []
+        async let context = NamingContext.current(skippedFolders: skipped)
+        async let tree = FileSystemScanner(
+            retainThreshold: retainThreshold, stats: stats, skippedPaths: Set(skipped.map { dataVolume + $0 })
+        ).scan(path: dataVolume)
         let snapshot = await ScanSnapshot(
             root: tree, context: context, deniedPaths: stats.deniedPaths.withLock(\.self).sorted(),
             itemCount: stats.itemsScanned
@@ -103,6 +106,14 @@ nonisolated enum SpaceAnalyser {
             capacity: DiskCapacity.current(),
             duration: duration
         )
+    }
+
+    /// Folders macOS asks about before an app without Full Disk Access may read them.
+    private static func promptingFolders(home: String) -> [String] {
+        [
+            "Desktop", "Documents", "Downloads", "Library/Mobile Documents", "Library/CloudStorage",
+            "Library/Containers", "Library/Group Containers"
+        ].map(home.appendingPathComponent)
     }
 
     /// Files and folders on the data volume, from its inode usage.

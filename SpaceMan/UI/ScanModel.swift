@@ -50,22 +50,25 @@ final class ScanModel {
         return true
     }
 
-    /// Scans on first launch, or once Full Disk Access turns up, but never without it: the scan would prompt for
-    /// each protected folder and still miss data.
+    /// Scans on first launch, or once Full Disk Access turns up, but never without it unless asked to.
     func scanIfReady() {
         hasFullDiskAccess = SpaceAnalyser.hasFullDiskAccess
         guard hasFullDiskAccess, case .idle = phase else { return }
         scan()
     }
 
+    /// Without Full Disk Access, folders macOS would ask about are skipped and reported as unreadable.
     func scan() {
         scanTask?.cancel()
         hasFullDiskAccess = SpaceAnalyser.hasFullDiskAccess
+        let skipsPromptingFolders = !hasFullDiskAccess
         let stats = ScanStats()
         phase = .scanning(Progress(stats: stats, started: Date(), expectedItemCount: expectedItemCount()))
 
         scanTask = Task {
-            let result = await Task.detached { await SpaceAnalyser.analyse(stats: stats) }.value
+            let result = await Task.detached {
+                await SpaceAnalyser.analyse(stats: stats, skipsPromptingFolders: skipsPromptingFolders)
+            }.value
             guard !Task.isCancelled else { return }
             UserDefaults.standard.set(result.scannedItemCount, forKey: Self.lastScannedItemCountKey)
             cleanup.update(index: result.cleanupIndex)
