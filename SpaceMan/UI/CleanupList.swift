@@ -105,11 +105,28 @@ final class CleanupList {
 
     /// Adding a folder subsumes anything already listed inside it.
     func add(_ item: StorageItem) {
-        guard eligibility(of: item) == .eligible, let path = item.path, let size = index?.diskSizes[path] else {
-            return
-        }
+        guard eligibility(of: item) == .eligible, let path = item.path, let size = index?.diskSizes[path],
+              case .excluded = inclusion(of: path)
+        else { return }
         entries.removeAll { $0.path.hasPrefix(path + "/") }
         entries.append(CleanupEntry(path: path, title: item.title, size: size))
+    }
+
+    /// What ticking everything in `item` would add, looking through categories and groups to the items in them.
+    func addableItems(in item: StorageItem) -> [StorageItem] {
+        (item.children ?? []).flatMap { child -> [StorageItem] in
+            if child.kind.isGrouping {
+                return addableItems(in: child)
+            }
+            guard eligibility(of: child) == .eligible, let path = child.path,
+                  case .excluded = inclusion(of: path)
+            else { return [] }
+            return [child]
+        }
+    }
+
+    func addAll(in item: StorageItem) {
+        addableItems(in: item).forEach(add)
     }
 
     func remove(_ path: String) {

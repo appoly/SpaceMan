@@ -27,6 +27,16 @@ nonisolated struct StorageItem: Identifiable, Hashable, Sendable {
     }
 }
 
+extension StorageItem.Kind {
+    /// Categories and groups gather items from anywhere rather than standing for a folder.
+    nonisolated var isGrouping: Bool {
+        switch self {
+        case .category, .group: true
+        case .entry, .remainder: false
+        }
+    }
+}
+
 extension [StorageItem] {
     nonisolated var sortedBySize: [StorageItem] {
         sorted { $0.size > $1.size }

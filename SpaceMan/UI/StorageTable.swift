@@ -67,10 +67,12 @@ struct StorageTable: View {
             return .handled
         }
         .contextMenu(forSelectionType: StorageItem.ID.self) { ids in
-            if let id = ids.first, let item = items.item(withID: id), let path = item.path {
-                Button("Reveal in Finder") { NSWorkspace.shared.revealInFinder(path) }
-                Button("Copy Path") { NSPasteboard.general.copy(path) }
-                cleanupMenuItem(for: item, at: path)
+            if let id = ids.first, let item = items.item(withID: id) {
+                if let path = item.path {
+                    Button("Reveal in Finder") { NSWorkspace.shared.revealInFinder(path) }
+                    Button("Copy Path") { NSPasteboard.general.copy(path) }
+                }
+                cleanupMenuItems(for: item)
             }
         } primaryAction: { ids in
             if let id = ids.first {
@@ -80,10 +82,12 @@ struct StorageTable: View {
     }
 
     @ViewBuilder
-    private func cleanupMenuItem(for item: StorageItem, at path: String) -> some View {
+    private func cleanupMenuItems(for item: StorageItem) -> some View {
         let eligibility = cleanup.eligibility(of: item)
-        if eligibility.showsCheckbox {
+        if item.path != nil, eligibility.showsCheckbox || item.children != nil {
             Divider()
+        }
+        if eligibility.showsCheckbox, let path = item.path {
             switch cleanup.inclusion(of: path) {
             case .included:
                 Button("Remove from Clean Up") { cleanup.remove(path) }
@@ -93,6 +97,10 @@ struct StorageTable: View {
                 Button("Add to Clean Up") { cleanup.add(item) }
                     .disabled(eligibility != .eligible)
             }
+        }
+        if item.children != nil {
+            Button("Select All for Clean Up") { cleanup.addAll(in: item) }
+                .disabled(cleanup.addableItems(in: item).isEmpty)
         }
     }
 

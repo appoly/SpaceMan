@@ -64,6 +64,29 @@ struct CleanupIndexTests {
         }
     }
 
+    @MainActor @Test func selectingAllAddsEligibleItemsThroughGroupsButSkipsCoveredOnes() {
+        let list = CleanupList()
+        list.update(index: index)
+        list.add(entry("/Users/test/Code/Project", size: 40))
+        var group = entry("Group", size: 90, kind: .group)
+        group.children = [
+            entry("/Users/test/Library/Caches/App", size: 60),
+            entry("/Users/test/Code/Project/build", size: 30)
+        ]
+        var category = entry("Category", size: 95, kind: .category)
+        category.children = [
+            group, entry("/Users/test/Library", size: 100), entry("/private/var/folders/ab/cdef/T/junk", size: 5)
+        ]
+
+        #expect(list.addableItems(in: category).map(\.path) == [
+            "/Users/test/Library/Caches/App", "/private/var/folders/ab/cdef/T/junk"
+        ])
+        list.addAll(in: category)
+        #expect(list.entries.map(\.path) == [
+            "/Users/test/Code/Project", "/Users/test/Library/Caches/App", "/private/var/folders/ab/cdef/T/junk"
+        ])
+    }
+
     @MainActor @Test func permanentCleanUpDeletesListedFolders() async throws {
         let folder = FileManager.default.temporaryDirectory.appending(path: "CleanupTest-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
