@@ -37,12 +37,15 @@ DerivedData, SwiftPM caches and several versioned Xcodes. A folder-size tool tel
 - **Flags leftovers.** Simulator runtimes CoreSimulator no longer knows about, simulators whose runtime is gone,
   DerivedData for projects that no longer exist, caches built for a previous macOS.
 - **Folders view.** Flip the toolbar switch to browse the same scan by location, with raw names alongside what
-  SpaceMan identified each folder as.
-- **Clean Up.** Tick items to build a list with a running total, then move them to the Trash or delete them
-  outright. Only whole folders you can safely delete are selectable, and SpaceMan explains why when something
-  isn't.
+  SpaceMan identified each folder as. Right-click a column heading to show each folder's location instead.
+- **Sortable.** Click a column heading to sort by name, location or size. Each folder's contents sort on their
+  own, so nothing leaves its parent.
+- **Clean Up.** Tick items to build a list with a running total, or right-click a parent and choose **Select All
+  for Clean Up**, then move them to the Trash or delete them outright. Only whole folders you can safely delete
+  are selectable; the rest show a no-entry sign whose tooltip explains why.
 - **Honest totals.** Other APFS volumes, root-only simulator runtimes and space no folder accounts for (snapshots,
-  purgeable data) are shown explicitly, so the numbers add up to what the disk reports.
+  purgeable data) are shown explicitly, so the numbers add up to what the disk reports. Sizes marked with an
+  asterisk leave out items inside that folder that are listed separately.
 - **Quick.** A full scan of a 450 GB disk holding 4.5 million files takes about 35 seconds.
 
 ## What it recognises
