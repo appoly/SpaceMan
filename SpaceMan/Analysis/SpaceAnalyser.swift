@@ -112,7 +112,11 @@ nonisolated enum SpaceAnalyser {
     private static func promptingFolders(home: String) -> [String] {
         [
             "Desktop", "Documents", "Downloads", "Library/Mobile Documents", "Library/CloudStorage",
-            "Library/Containers", "Library/Group Containers"
+            "Library/Containers", "Library/Group Containers", "Music/Music", "Movies/TV",
+            "Pictures/Photos Library.photoslibrary", "Library/Application Support/Music",
+            "Library/Application Support/com.apple.MediaPlayer",
+            "Library/Application Support/com.apple.MediaPlaybackCore.PlaybackEventStreams",
+            "Library/Caches/com.apple.AMPLibraryAgent", "Library/Caches/com.apple.Music"
         ].map(home.appendingPathComponent)
     }
 
