@@ -3,6 +3,8 @@ import SwiftUI
 struct CleanupPanel: View {
     let cleanup: CleanupList
     let cleanUp: (_ permanently: Bool) async -> [CleanupFailure]
+    /// Leaves out the list of entries, which is too tall for the strip shown while the inspector is hidden.
+    var isCompact = false
     @State private var isConfirming = false
     @State private var failures: [CleanupFailure] = []
     @State private var blockedAppCount = 0
@@ -14,27 +16,29 @@ struct CleanupPanel: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .firstTextBaseline) {
-                Text("Clean Up").font(.headline)
+                Text(isCompact ? itemCount : "Clean Up").font(.headline)
                 Spacer()
                 Text(cleanup.totalSize.formatted(.byteCount(style: .file)))
                     .font(.headline)
                     .monospacedDigit()
             }
 
-            if cleanup.entries.isEmpty {
-                Text("Tick items in the list to add them here.")
-                    .foregroundStyle(.secondary)
-                    .font(.callout)
-            } else {
-                ScrollView {
-                    VStack(spacing: 6) {
-                        ForEach(cleanup.entries) { entry in
-                            EntryRow(entry: entry) { cleanup.remove(entry.path) }
+            if !isCompact {
+                if cleanup.entries.isEmpty {
+                    Text("Tick items in the list to add them here.")
+                        .foregroundStyle(.secondary)
+                        .font(.callout)
+                } else {
+                    ScrollView {
+                        VStack(spacing: 6) {
+                            ForEach(cleanup.entries) { entry in
+                                EntryRow(entry: entry) { cleanup.remove(entry.path) }
+                            }
                         }
+                        .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { entriesHeight = $0 }
                     }
-                    .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { entriesHeight = $0 }
+                    .frame(height: min(entriesHeight, 180))
                 }
-                .frame(height: min(entriesHeight, 180))
             }
 
             Button {
@@ -51,7 +55,8 @@ struct CleanupPanel: View {
             .buttonStyle(.borderedProminent)
             .disabled(cleanup.entries.isEmpty || cleanup.isCleaning)
         }
-        .padding()
+        .padding(.horizontal)
+        .padding(.vertical, isCompact ? 10 : 16)
         .confirmationDialog(confirmationTitle, isPresented: $isConfirming) {
             switch (cleanup.includesTrash, cleanup.includesItemsBesidesTrash) {
             case (true, false):
@@ -107,6 +112,10 @@ struct CleanupPanel: View {
             "not delete them immediately. Grant it in System Settings, then relaunch SpaceMan."
     }
 
+    private var itemCount: String {
+        cleanup.entries.count == 1 ? "1 item" : "\(cleanup.entries.count) items"
+    }
+
     private var confirmationTitle: String {
         let count = cleanup.entries.count
         let size = cleanup.totalSize.formatted(.byteCount(style: .file))
@@ -151,6 +160,7 @@ private struct EntryRow: View {
 struct CleanupEligibilityNote: View {
     let item: StorageItem?
     let cleanup: CleanupList
+    var isPadded = true
 
     var body: some View {
         if let note {
@@ -158,7 +168,7 @@ struct CleanupEligibilityNote: View {
                 .font(.callout)
                 .foregroundStyle(.orange)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding()
+                .padding(isPadded ? 16 : 0)
         }
     }
 

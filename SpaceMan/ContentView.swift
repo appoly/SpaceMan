@@ -11,7 +11,6 @@ struct ContentView: View {
         content
             .frame(minWidth: 760, minHeight: 480)
             .inspector(isPresented: $showsInspector) {
-                let selectedItem = selection.flatMap { model.result?.allItems.item(withID: $0) }
                 VStack(spacing: 0) {
                     ItemInspector(item: selectedItem)
                         .frame(maxHeight: .infinity)
@@ -41,7 +40,9 @@ struct ContentView: View {
                     .disabled(model.isScanning || !model.hasFullDiskAccess)
                 }
                 ToolbarItem(placement: .primaryAction) {
-                    Button("Inspector", systemImage: "sidebar.right") { showsInspector.toggle() }
+                    Button("Inspector", systemImage: "sidebar.right") {
+                        withAnimation { showsInspector.toggle() }
+                    }
                 }
             }
             .sheet(isPresented: .constant(model.isCleaningUp)) {
@@ -51,6 +52,10 @@ struct ContentView: View {
             .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
                 model.scanIfReady()
             }
+    }
+
+    private var selectedItem: StorageItem? {
+        selection.flatMap { model.result?.allItems.item(withID: $0) }
     }
 
     @ViewBuilder
@@ -83,6 +88,13 @@ struct ContentView: View {
                     selection: $selection,
                     cleanup: model.cleanup
                 )
+
+                if !showsInspector {
+                    Divider()
+                    DetailsStrip(item: selectedItem, cleanup: model.cleanup, cleanUp: model.cleanUp(permanently:)) {
+                        withAnimation { showsInspector = true }
+                    }
+                }
             }
         }
     }
