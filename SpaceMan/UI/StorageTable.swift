@@ -26,23 +26,27 @@ struct StorageTable: View {
     let totalUsed: Int64
     @Binding var selection: StorageItem.ID?
     @State private var expanded: Set<StorageItem.ID> = []
+    @State private var sortOrder = [StorageSort.largestFirst]
     @FocusState private var isFocused: Bool
     /// Passed explicitly: cells created as rows expand don't reliably inherit the SwiftUI environment.
     let cleanup: CleanupList
 
     var body: some View {
-        Table(of: StorageItem.self, selection: $selection) {
-            TableColumn("Name") { item in
+        Table(of: StorageItem.self, selection: $selection, sortOrder: $sortOrder) {
+            TableColumn("Name", sortUsing: StorageSort(column: .name, order: .forward)) { item in
                 NameCell(item: item, mode: mode, cleanup: cleanup)
             }
             .width(min: 180, ideal: 420)
 
-            TableColumn(mode == .categories ? "Location" : "Identified as") { item in
+            TableColumn(
+                mode == .categories ? "Location" : "Identified as",
+                sortUsing: StorageSort(column: mode == .categories ? .location : .identifiedAs, order: .forward)
+            ) { item in
                 SecondaryCell(item: item, mode: mode)
             }
             .width(min: 100, ideal: 280)
 
-            TableColumn("Size") { item in
+            TableColumn("Size", sortUsing: StorageSort.largestFirst) { item in
                 SizeCell(
                     size: item.size,
                     scale: largestTopLevelSize,
@@ -52,7 +56,7 @@ struct StorageTable: View {
             }
             .width(120)
         } rows: {
-            StorageRows(items: items, expanded: $expanded)
+            StorageRows(items: items, sort: sortOrder.first ?? .largestFirst, expanded: $expanded)
         }
         .background(TableViewConfigurator())
         .id(mode)
@@ -123,13 +127,14 @@ struct StorageTable: View {
 
 private struct StorageRows: TableRowContent {
     let items: [StorageItem]
+    let sort: StorageSort
     @Binding var expanded: Set<StorageItem.ID>
 
     var tableRowBody: some TableRowContent<StorageItem> {
-        ForEach(items) { item in
+        ForEach(items.sorted(using: sort)) { item in
             if let children = item.children {
                 DisclosureTableRow(item, isExpanded: $expanded.containing(item.id)) {
-                    StorageRows(items: children, expanded: $expanded)
+                    StorageRows(items: children, sort: sort, expanded: $expanded)
                 }
             } else {
                 TableRow(item)
@@ -185,7 +190,7 @@ private struct SecondaryCell: View {
     var body: some View {
         switch mode {
         case .categories:
-            Text(item.kind == .remainder ? "" : item.path?.abbreviatingWithTilde ?? "")
+            Text(item.locationText ?? "")
                 .foregroundStyle(.secondary)
                 .truncationMode(.middle)
                 .lineLimit(1)
