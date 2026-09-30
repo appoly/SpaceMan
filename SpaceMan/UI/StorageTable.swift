@@ -43,7 +43,12 @@ struct StorageTable: View {
             .width(min: 100, ideal: 280)
 
             TableColumn("Size") { item in
-                SizeCell(size: item.size, scale: largestTopLevelSize, totalUsed: totalUsed)
+                SizeCell(
+                    size: item.size,
+                    scale: largestTopLevelSize,
+                    totalUsed: totalUsed,
+                    excludesItemsListedSeparately: cleanup.excludesItemsListedSeparately(item)
+                )
             }
             .width(120)
         } rows: {
@@ -268,12 +273,18 @@ private struct SizeCell: View {
     let size: Int64
     let scale: Int64
     let totalUsed: Int64
+    let excludesItemsListedSeparately: Bool
 
     var body: some View {
         HStack(spacing: 8) {
-            Text(size.formatted(.byteCount(style: .file)))
-                .monospacedDigit()
-                .frame(width: 76, alignment: .trailing)
+            HStack(spacing: 1) {
+                Text(size.formatted(.byteCount(style: .file)))
+                    .monospacedDigit()
+                    .frame(width: 76, alignment: .trailing)
+                Text(verbatim: "*")
+                    .opacity(excludesItemsListedSeparately ? 1 : 0)
+            }
+            .fixedSize()
             GeometryReader { proxy in
                 Capsule()
                     .fill(.tint.opacity(0.6))
@@ -281,7 +292,13 @@ private struct SizeCell: View {
             }
             .frame(height: 6)
         }
-        .help(totalUsed > 0 ? "\(fraction(of: totalUsed).formatted(Self.shareFormat)) of used space" : "")
+        .help(helpText)
+    }
+
+    private var helpText: String {
+        let share = totalUsed > 0 ? "\(fraction(of: totalUsed).formatted(Self.shareFormat)) of used space" : ""
+        guard excludesItemsListedSeparately else { return share }
+        return share + "\n* Excludes items inside this folder that are listed separately"
     }
 
     private func fraction(of total: Int64) -> Double {

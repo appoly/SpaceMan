@@ -79,6 +79,11 @@ final class CleanupList {
         index?.eligibility(of: item) ?? .notAFolder
     }
 
+    /// A catch-all's figure leaves out what's inside its folder but listed separately, so it isn't its size on disk.
+    func excludesItemsListedSeparately(_ item: StorageItem) -> Bool {
+        eligibility(of: item) == .partial
+    }
+
     func inclusion(of path: String) -> Inclusion {
         if entries.contains(where: { $0.path == path }) {
             return .included
