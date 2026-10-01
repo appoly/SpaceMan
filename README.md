@@ -52,7 +52,7 @@ DerivedData, SwiftPM caches and several versioned Xcodes. A folder-size tool tel
 
 | Category | Examples |
 | --- | --- |
-| iOS & Apple development | Xcode installs, simulator runtimes and devices, device support, DerivedData, project `build`/`.build` folders, archives, SwiftPM and CocoaPods caches, CoreDevice data |
+| iOS & Apple development | Xcode installs, simulator runtimes and devices, device support, DerivedData, project `build`/`.build` folders, archives, SwiftPM and CocoaPods caches, device install caches, CoreDevice data |
 | AI models & tools | Claude desktop and Claude Code, ChatGPT and Codex, OpenCode, Ollama, LM Studio, Hugging Face models, Chrome's Gemini Nano, Apple Intelligence and Siri assets |
 | Web development | npm, pnpm, Yarn, Bun, Deno, nvm, Composer, Herd, project `build` folders |
 | Other developer tools | Homebrew, pip, uv, conda, Rust, Go, Ruby, Docker, VS Code, JetBrains |

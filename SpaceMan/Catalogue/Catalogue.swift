@@ -31,6 +31,11 @@ nonisolated extension Catalogue {
         Rule(.appleDevelopment, nil, "/Library/Developer/CoreSimulator", "Other simulator system data",
              children: .folderTree),
 
+        Rule(.appleDevelopment, nil,
+             "~/Library/Containers/com.apple.CoreDevice.CoreDeviceService/Data/Library/Caches/AppInstallationBinaryDeltas",
+             "Device install caches", children: .named(.bundleIdentifier),
+             about: "Copies of each app Xcode has installed on a physical device, kept so later installs only send " +
+                 "what changed. Old copies are never pruned. Safe to delete; the next install sends the full app."),
         Rule(.appleDevelopment, nil, "~/Library/Containers/com.apple.CoreDevice.CoreDeviceService", "CoreDevice data",
              children: .folderTree,
              about: "Data for CoreDevice, the service Xcode uses to talk to physical devices."),
