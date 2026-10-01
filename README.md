@@ -33,7 +33,8 @@ DerivedData, SwiftPM caches and several versioned Xcodes. A folder-size tool tel
   *Other developer tools*, *Applications*, *Web browsers* and *macOS*, each broken down into the things inside it.
 - **Friendly names from real metadata.** `af14d04f….asset` becomes *iOS 26.5 (23F77)*, a simulator's UUID folder
   becomes *iPhone 17 Pro · iOS 26.5*, and `MyApp-dptsbos…` in DerivedData becomes the project it was built from.
-- **Knows what things are.** Select an item to see what it is and how to reclaim it safely.
+- **Knows what things are.** Select an item to see what it is and how to reclaim it safely, in the inspector or,
+  while it's hidden, a strip beneath the table.
 - **Flags leftovers.** Simulator runtimes CoreSimulator no longer knows about, simulators whose runtime is gone,
   DerivedData for projects that no longer exist, caches built for a previous macOS.
 - **Folders view.** Flip the toolbar switch to browse the same scan by location, with raw names alongside what
