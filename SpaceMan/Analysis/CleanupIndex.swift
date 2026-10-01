@@ -95,11 +95,17 @@ nonisolated struct CleanupIndex: Sendable {
             || path == home
             || parent == home
             || parent == home.appendingPathComponent("Library")
+            || parent == containersPath
             || Self.protectedPaths.contains(path)
             || Self.protectedPaths.contains(parent)
             || isPerUserTemporaryRoot(path)
             || path == appBundle
             || path.hasPrefix(appBundle + "/")
+    }
+
+    /// macOS refuses to remove a sandboxed app's container even with Full Disk Access, though its contents can go.
+    private var containersPath: String {
+        home.appendingPathComponent("Library/Containers")
     }
 
     /// Their direct children are also protected.

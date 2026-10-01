@@ -32,6 +32,12 @@ struct CleanupIndexTests {
         #expect(index.eligibility(of: entry("/private/var/folders/ab/cdef/T", size: 5)) == .protected)
     }
 
+    @Test func appContainersAreProtectedButTheirContentsAreNot() {
+        let container = "/Users/test/Library/Containers/com.example.App"
+        #expect(index.isProtected(container))
+        #expect(!index.isProtected(container.appendingPathComponent("Data/Library/Caches/Junk")))
+    }
+
     @Test func catchAllsThatExcludeListedChildrenAreRefused() {
         #expect(index.eligibility(of: entry("/Users/test/Code/Project", size: 10)) == .partial)
     }

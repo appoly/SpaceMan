@@ -106,9 +106,6 @@ private struct CleaningUpView: View {
         VStack(spacing: 12) {
             ProgressView()
             Text("Cleaning up…").font(.headline)
-            Text("Finder may ask for your password to move some items.")
-                .font(.callout)
-                .foregroundStyle(.secondary)
         }
         .padding(24)
         .frame(minWidth: 300)
