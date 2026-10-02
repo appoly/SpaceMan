@@ -117,3 +117,7 @@ ad-hoc-signed build loses the grant on every rebuild.
 ## Licence
 
 SpaceMan is released under the [MIT licence](LICENSE). Copyright © 2026 Appoly Ltd.
+
+SpaceMan is provided as is, without warranty of any kind, and no liability is accepted for any loss or damage
+arising from its use. It deletes files at your request, so check what you've selected and keep backups; you use it
+at your own risk.
