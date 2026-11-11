@@ -9,6 +9,8 @@ nonisolated struct SunburstSegment: Identifiable, Sendable {
     let content: Content
     let parentID: StorageItem.ID?
     let depth: Int
+    /// Position among the siblings drawn, so neighbours sharing a colour can be told apart.
+    let siblingIndex: Int
     let start: Double
     let end: Double
 
@@ -85,7 +87,7 @@ nonisolated struct SunburstLayout: Sendable {
             let span = Double(content.size) / Double(circle)
             if span >= minimumFraction {
                 segments.append(SunburstSegment(
-                    content: content, parentID: nil, depth: 1, start: position, end: position + span
+                    content: content, parentID: nil, depth: 1, siblingIndex: 0, start: position, end: position + span
                 ))
             }
             position += span
@@ -95,17 +97,6 @@ nonisolated struct SunburstLayout: Sendable {
 
     func segment(atFraction fraction: Double, depth: Int) -> SunburstSegment? {
         segments.first { $0.depth == depth && $0.start <= fraction && fraction < $0.end }
-    }
-
-    /// The IDs from the outermost ring's parent down to `segment` itself.
-    func lineage(of segment: SunburstSegment) -> [StorageItem.ID] {
-        var lineage = [segment.id]
-        var parentID = segment.parentID
-        while let id = parentID {
-            lineage.insert(id, at: 0)
-            parentID = segments.first { $0.id == id }?.parentID
-        }
-        return lineage
     }
 }
 
@@ -118,13 +109,16 @@ nonisolated private struct Builder {
         _ items: [StorageItem], parentID: StorageItem.ID?, from start: Double, scale: Double, depth: Int
     ) {
         var position = start
+        var siblingIndex = 0
         for item in items.sortedBySize {
             let span = Double(item.size) * scale
             defer { position += span }
             guard span >= minimumFraction else { continue }
             segments.append(SunburstSegment(
-                content: .item(item), parentID: parentID, depth: depth, start: position, end: position + span
+                content: .item(item), parentID: parentID, depth: depth, siblingIndex: siblingIndex, start: position,
+                end: position + span
             ))
+            siblingIndex += 1
             guard let children = item.children, depth < maxDepth else { continue }
             let childrenTotal = max(item.size, children.reduce(0) { $0 + $1.size })
             guard childrenTotal > 0 else { continue }

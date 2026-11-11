@@ -54,6 +54,19 @@ extension [StorageItem] {
         return nil
     }
 
+    /// The IDs from the top level down to the item with `id`, inclusive.
+    nonisolated func lineage(to id: StorageItem.ID) -> [StorageItem.ID]? {
+        for item in self {
+            if item.id == id {
+                return [id]
+            }
+            if let lineage = item.children?.lineage(to: id) {
+                return [item.id] + lineage
+            }
+        }
+        return nil
+    }
+
     nonisolated func item(withID id: StorageItem.ID) -> StorageItem? {
         for item in self {
             if item.id == id {

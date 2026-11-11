@@ -1,18 +1,44 @@
 import AppKit
 import SwiftUI
 
+enum InspectorSubject {
+    case item(StorageItem)
+    /// Space that isn't an item, such as the whole disk or its free space.
+    case summary(title: String, size: Int64)
+}
+
+extension InspectorSubject {
+    var item: StorageItem? {
+        switch self {
+        case let .item(item): item
+        case .summary: nil
+        }
+    }
+}
+
 struct ItemInspector: View {
-    let item: StorageItem?
+    let subject: InspectorSubject?
+    let contents: [ContentsRow]
+    @Binding var highlightedRowID: String?
+    let open: ((StorageItem) -> Void)?
 
     var body: some View {
-        if let item {
+        if let subject {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    ItemHeading(item: item)
-                    Text(item.size.formatted(.byteCount(style: .file)))
-                        .font(.largeTitle.weight(.semibold))
-                        .monospacedDigit()
-                    ItemDetails(item: item)
+                    switch subject {
+                    case let .item(item):
+                        ItemHeading(item: item)
+                        size(item.size)
+                        ItemDetails(item: item)
+                    case let .summary(title, size):
+                        Text(title)
+                            .font(.title3.bold())
+                        self.size(size)
+                    }
+                    if !contents.isEmpty {
+                        ContentsList(rows: contents, highlightedID: $highlightedRowID, open: open)
+                    }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding()
@@ -22,6 +48,12 @@ struct ItemInspector: View {
                 "No Selection", systemImage: "sidebar.right", description: Text("Select an item to see what it is.")
             )
         }
+    }
+
+    private func size(_ size: Int64) -> some View {
+        Text(size.formatted(.byteCount(style: .file)))
+            .font(.largeTitle.weight(.semibold))
+            .monospacedDigit()
     }
 }
 

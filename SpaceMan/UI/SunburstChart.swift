@@ -3,6 +3,7 @@ import SwiftUI
 
 struct SunburstChart: View {
     let layout: SunburstLayout
+    let palette: SunburstPalette
     let title: String
     let size: Int64
     let selectedID: StorageItem.ID?
@@ -19,7 +20,7 @@ struct SunburstChart: View {
                 let separator = Color(nsColor: .windowBackgroundColor)
                 for segment in layout.segments {
                     let path = rings.path(for: segment)
-                    context.fill(path, with: .color(segment.colour(hueSpan: layout.itemsEnd)))
+                    context.fill(path, with: .color(segment.colour(palette: palette, hueSpan: layout.itemsEnd)))
                     if segment.id == highlightedID {
                         context.fill(path, with: .color(.white.opacity(0.3)))
                     }
@@ -133,23 +134,50 @@ private struct RingGeometry {
     }
 }
 
-extension SunburstSegment {
+enum SunburstPalette {
+    /// Matches the usage bar and the categories' icons.
+    case category
     /// Hue follows the segment's position around the circle, so children stay close to their parent's colour.
-    func colour(hueSpan: Double) -> Color {
+    case position
+}
+
+extension StorageViewMode {
+    var chartPalette: SunburstPalette {
+        switch self {
+        case .categories: .category
+        case .folders: .position
+        }
+    }
+}
+
+extension SunburstSegment {
+    /// `hueSpan` is the share of the circle the items cover.
+    func colour(palette: SunburstPalette, hueSpan: Double) -> Color {
         switch content {
         case let .item(item):
             switch item.kind {
             case .remainder:
                 return .gray.opacity(0.5)
             case .category, .group, .entry:
-                let hue = hueSpan > 0 ? midpoint / hueSpan * 0.85 : 0
-                let ring = Double(depth - 1)
-                return Color(hue: hue, saturation: max(0.25, 0.65 - ring * 0.1), brightness: min(1, 0.85 + ring * 0.04))
+                return itemColour(item, palette: palette, hueSpan: hueSpan)
             }
         case .unlisted:
             return .gray.opacity(0.3)
         case .freeSpace:
             return .secondary.opacity(0.12)
+        }
+    }
+
+    private func itemColour(_ item: StorageItem, palette: SunburstPalette, hueSpan: Double) -> Color {
+        let ring = Double(depth - 1)
+        switch palette {
+        case .category:
+            return item.category.colour
+                .mix(with: .white, by: min(0.6, ring * 0.15))
+                .mix(with: .black, by: siblingIndex.isMultiple(of: 2) ? 0 : 0.12)
+        case .position:
+            let hue = hueSpan > 0 ? midpoint / hueSpan * 0.85 : 0
+            return Color(hue: hue, saturation: max(0.25, 0.65 - ring * 0.1), brightness: min(1, 0.85 + ring * 0.04))
         }
     }
 }

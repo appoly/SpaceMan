@@ -37,10 +37,11 @@ struct SunburstLayoutTests {
         #expect(layout.depth == 2)
     }
 
-    @Test func lineageRunsFromTheTopRingDown() throws {
-        let tree = item("a", size: 10, children: [item("b", size: 10, children: [item("c", size: 10)])])
-        let layout = SunburstLayout(items: [tree], total: 10, maxDepth: 3, minimumFraction: 0)
-        let segment = try #require(layout.segment(atFraction: 0.5, depth: 3))
-        #expect(layout.lineage(of: segment) == ["a", "b", "c"])
+    @Test func lineageRunsFromTheTopLevelDown() {
+        let tree = [
+            item("x", size: 5), item("a", size: 10, children: [item("b", size: 10, children: [item("c", size: 10)])])
+        ]
+        #expect(tree.lineage(to: "c") == ["a", "b", "c"])
+        #expect(tree.lineage(to: "missing") == nil)
     }
 }

@@ -40,8 +40,9 @@ DerivedData, SwiftPM caches and several versioned Xcodes. A folder-size tool tel
 - **Folders view.** Flip the toolbar switch to browse the same scan by location, with raw names alongside what
   SpaceMan identified each folder as. Right-click a column heading to show each folder's location instead.
 - **Chart view.** Flip the second toolbar switch to see either view as a sunburst chart, with the whole disk and
-  its free space as the circle. Click a segment to open it, then use the trail above the chart or click the
-  middle to go back up. The legend beside the chart lists what's inside the focused or hovered segment.
+  its free space as the circle, coloured by category in the categories view. Click a segment to open it, then use
+  the trail above the chart or click the middle to go back up. The inspector follows the pointer around the chart.
+- **Contents at a glance.** The inspector lists what's inside the selected item, largest first.
 - **Sortable.** Click a column heading to sort by name, location or size. Each folder's contents sort on their
   own, so nothing leaves its parent.
 - **Clean Up.** Tick items to build a list with a running total, or right-click a parent and choose **Select All
