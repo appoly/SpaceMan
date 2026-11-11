@@ -6,6 +6,8 @@ struct ContentView: View {
     @State private var selection: StorageItem.ID?
     @State private var showsInspector = true
     @AppStorage("viewMode") private var mode = StorageViewMode.categories
+    @AppStorage("presentation") private var presentation = StoragePresentation.list
+    @State private var chartFocus: [StorageItem.ID] = []
 
     var body: some View {
         content
@@ -22,12 +24,23 @@ struct ContentView: View {
             }
             .onChange(of: mode) {
                 selection = selection.flatMap { model.result?.equivalentID(of: $0, in: mode) }
+                chartFocus = []
             }
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     Picker("View", selection: $mode) {
                         ForEach(StorageViewMode.allCases, id: \.self) { mode in
                             Label(mode.title, systemImage: mode.symbol)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .disabled(model.result == nil)
+                }
+                ToolbarSpacer(.fixed, placement: .principal)
+                ToolbarItem(placement: .principal) {
+                    Picker("Presentation", selection: $presentation) {
+                        ForEach(StoragePresentation.allCases, id: \.self) { presentation in
+                            Label(presentation.title, systemImage: presentation.symbol)
                         }
                     }
                     .pickerStyle(.segmented)
@@ -58,6 +71,13 @@ struct ContentView: View {
         selection.flatMap { model.result?.allItems.item(withID: $0) }
     }
 
+    private func items(in result: ScanResult) -> [StorageItem] {
+        switch mode {
+        case .categories: result.categories
+        case .folders: result.locations
+        }
+    }
+
     @ViewBuilder
     private var content: some View {
         switch model.phase {
@@ -81,13 +101,22 @@ struct ContentView: View {
                 }
                 .padding()
 
-                StorageTable(
-                    items: mode == .categories ? result.categories : result.locations,
-                    mode: mode,
-                    totalUsed: result.capacity?.used ?? result.categories.reduce(0) { $0 + $1.size },
-                    selection: $selection,
-                    cleanup: model.cleanup
-                )
+                switch presentation {
+                case .list:
+                    StorageTable(
+                        items: items(in: result),
+                        mode: mode,
+                        totalUsed: result.capacity?.used ?? result.categories.reduce(0) { $0 + $1.size },
+                        selection: $selection,
+                        cleanup: model.cleanup
+                    )
+                case .chart:
+                    Divider()
+                    ChartBrowser(
+                        items: items(in: result), capacity: result.capacity, focusPath: $chartFocus,
+                        selection: $selection
+                    )
+                }
 
                 if !showsInspector {
                     Divider()
