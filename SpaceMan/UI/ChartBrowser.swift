@@ -27,7 +27,6 @@ struct ChartScene {
     init(items: [StorageItem], capacity: DiskCapacity?, palette: SunburstPalette, focusPath: [StorageItem.ID]) {
         self.items = items
         self.capacity = capacity
-        self.palette = palette
 
         var level = items
         var trail: [StorageItem] = []
@@ -37,6 +36,8 @@ struct ChartScene {
             level = children
         }
         self.trail = trail
+        // Below the top level everything shares one category, so its shades can't tell segments apart.
+        self.palette = trail.isEmpty ? palette : .position
 
         layout = if let focus = trail.last {
             SunburstLayout(
