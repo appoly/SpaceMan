@@ -11,6 +11,7 @@ struct SunburstChart: View {
     let highlightedID: SunburstSegment.ID?
     @Binding var hovered: SunburstSegment?
     let activate: (SunburstSegment) -> Void
+    let deselect: () -> Void
     /// `nil` at the top level.
     let goUp: (() -> Void)?
     /// Unlike `hovered`, kept when the pointer leaves, so it survives the context menu opening over the chart.
@@ -66,6 +67,8 @@ struct SunburstChart: View {
                     goUp?()
                 } else if let segment = rings.segment(at: location, in: layout) {
                     activate(segment)
+                } else {
+                    deselect()
                 }
             }
         }

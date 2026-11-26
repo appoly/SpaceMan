@@ -105,6 +105,7 @@ struct ChartBrowser: View {
     let selection: StorageItem.ID?
     let cleanup: CleanupList
     let open: (StorageItem) -> Void
+    let deselect: () -> Void
     let navigate: (_ depth: Int) -> Void
 
     var body: some View {
@@ -127,12 +128,15 @@ struct ChartBrowser: View {
                         open(item)
                     }
                 },
+                deselect: deselect,
                 goUp: scene.trail.isEmpty ? nil : { navigate(scene.trail.count - 1) }
             )
             .id(scene.trail.last?.id)
             .transition(.opacity.combined(with: .scale(scale: 0.9)))
             .padding()
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .contentShape(.rect)
+            .onTapGesture(perform: deselect)
         }
     }
 }

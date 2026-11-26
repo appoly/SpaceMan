@@ -190,6 +190,7 @@ struct ContentView: View {
                         selection: selection,
                         cleanup: model.cleanup,
                         open: { open($0, in: scene) },
+                        deselect: { selection = nil },
                         navigate: { navigate(toDepth: $0, in: scene) }
                     )
                 } else {
