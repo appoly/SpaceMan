@@ -103,6 +103,7 @@ struct ChartBrowser: View {
     let scene: ChartScene
     @Bindable var state: ChartState
     let selection: StorageItem.ID?
+    let cleanup: CleanupList
     let open: (StorageItem) -> Void
     let navigate: (_ depth: Int) -> Void
 
@@ -118,6 +119,7 @@ struct ChartBrowser: View {
                 title: scene.title,
                 size: scene.size,
                 selectedID: selection,
+                cleanup: cleanup,
                 highlightedID: state.hovered?.id ?? state.highlightedRowID,
                 hovered: $state.hovered,
                 activate: { segment in

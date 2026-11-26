@@ -23,7 +23,18 @@ struct ContentView: View {
                         open: inspection.open
                     )
                     .frame(maxHeight: .infinity)
-                    CleanupEligibilityNote(item: inspection.subject?.item, cleanup: model.cleanup)
+                    if let item = inspection.subject?.item,
+                       case let actions = CleanupActions(item: item, cleanup: model.cleanup, includesSelectAll: false),
+                       !actions.isEmpty {
+                        VStack(alignment: .leading, spacing: 10) {
+                            HStack { actions }
+                            CleanupEligibilityNote(item: item, cleanup: model.cleanup, isPadded: false)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding()
+                    } else {
+                        CleanupEligibilityNote(item: inspection.subject?.item, cleanup: model.cleanup)
+                    }
                     Divider()
                     CleanupPanel(cleanup: model.cleanup, cleanUp: model.cleanUp(permanently:))
                 }
@@ -177,6 +188,7 @@ struct ContentView: View {
                         scene: scene,
                         state: chart,
                         selection: selection,
+                        cleanup: model.cleanup,
                         open: { open($0, in: scene) },
                         navigate: { navigate(toDepth: $0, in: scene) }
                     )

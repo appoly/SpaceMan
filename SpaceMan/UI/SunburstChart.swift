@@ -7,11 +7,14 @@ struct SunburstChart: View {
     let title: String
     let size: Int64
     let selectedID: StorageItem.ID?
+    let cleanup: CleanupList
     let highlightedID: SunburstSegment.ID?
     @Binding var hovered: SunburstSegment?
     let activate: (SunburstSegment) -> Void
     /// `nil` at the top level.
     let goUp: (() -> Void)?
+    /// Unlike `hovered`, kept when the pointer leaves, so it survives the context menu opening over the chart.
+    @State private var menuSegment: SunburstSegment?
 
     var body: some View {
         GeometryReader { proxy in
@@ -47,9 +50,15 @@ struct SunburstChart: View {
                     let segment = rings.segment(at: location, in: layout)
                     if segment?.id != hovered?.id {
                         hovered = segment
+                        menuSegment = segment
                     }
                 case .ended:
                     hovered = nil
+                }
+            }
+            .contextMenu {
+                if let item = menuSegment?.content.item {
+                    ItemMenuItems(item: item, cleanup: cleanup)
                 }
             }
             .onTapGesture { location in

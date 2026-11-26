@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 struct CleanupPanel: View {
@@ -25,7 +26,7 @@ struct CleanupPanel: View {
 
             if !isCompact {
                 if cleanup.entries.isEmpty {
-                    Text("Tick items in the list to add them here.")
+                    Text("Tick or right-click items to add them here.")
                         .foregroundStyle(.secondary)
                         .font(.callout)
                 } else {
@@ -180,5 +181,62 @@ struct CleanupEligibilityNote: View {
             return "Already included via \(ancestor.abbreviatingWithTilde)."
         }
         return eligibility.reason
+    }
+}
+
+/// Adds the item, or everything in it, to the Clean Up list; used both as menu items and as the inspector's buttons.
+struct CleanupActions: View {
+    let item: StorageItem
+    let cleanup: CleanupList
+    /// The inspector leaves it out, as there it's practically the same as adding the item itself.
+    var includesSelectAll = true
+
+    var isEmpty: Bool {
+        !showsToggle && !showsSelectAll
+    }
+
+    var body: some View {
+        let eligibility = cleanup.eligibility(of: item)
+        if showsToggle, let path = item.path {
+            switch cleanup.inclusion(of: path) {
+            case .included:
+                Button("Remove from Clean Up") { cleanup.remove(path) }
+            case .includedViaAncestor:
+                Button("Included via an Enclosing Folder") {}.disabled(true)
+            case .excluded:
+                Button("Add to Clean Up") { cleanup.add(item) }
+                    .disabled(eligibility != .eligible)
+            }
+        }
+        if showsSelectAll {
+            Button("Select All for Clean Up") { cleanup.addAll(in: item) }
+                .disabled(cleanup.addableItems(in: item).isEmpty)
+        }
+    }
+
+    private var showsSelectAll: Bool {
+        includesSelectAll && item.children != nil
+    }
+
+    private var showsToggle: Bool {
+        item.path != nil && cleanup.eligibility(of: item).showsCheckbox
+    }
+}
+
+/// An item's context menu, shared by the table and the chart.
+struct ItemMenuItems: View {
+    let item: StorageItem
+    let cleanup: CleanupList
+
+    var body: some View {
+        let actions = CleanupActions(item: item, cleanup: cleanup)
+        if let path = item.path {
+            Button("Reveal in Finder") { NSWorkspace.shared.revealInFinder(path) }
+            Button("Copy Path") { NSPasteboard.general.copy(path) }
+            if !actions.isEmpty {
+                Divider()
+            }
+        }
+        actions
     }
 }

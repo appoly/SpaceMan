@@ -46,7 +46,7 @@ DerivedData, SwiftPM caches and several versioned Xcodes. A folder-size tool tel
 - **Sortable.** Click a column heading to sort by name, location or size. Each folder's contents sort on their
   own, so nothing leaves its parent.
 - **Clean Up.** Tick items to build a list with a running total, or right-click a parent and choose **Select All
-  for Clean Up**, then move them to the Trash or delete them outright. Only whole folders you can safely delete
+  for Clean Up**; in the chart, right-click a segment or use the inspector's buttons. Then move them to the Trash or delete them outright. Only whole folders you can safely delete
   are selectable; the rest show a no-entry sign whose tooltip explains why.
 - **Honest totals.** Other APFS volumes, root-only simulator runtimes and space no folder accounts for (snapshots,
   purgeable data) are shown explicitly, so the numbers add up to what the disk reports. Sizes marked with an
